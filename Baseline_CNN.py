@@ -1,26 +1,24 @@
-#%%
-import torch 
+import torch
 from torch.nn import (Module, Conv2d, Linear,
-                      MaxPool2d, ReLU,
-                      Flatten, Dropout, LogSoftmax, )
+                      MaxPool2d, ReLU, LogSoftmax)
 from torch import flatten
 from typing import Tuple
 
-#%%a
-DEFAULT_CNN_OUT_CHANNEL : int = 20
-DEFAULT_CNN_KERNEL_SIZE : Tuple[int, int] = (5,5)
-DEFAULT_CNN_POOL_KERNEL_SIZE : Tuple[int, int] = (2,2)
-DEFAULT_CNN_POOL_STRIDE : Tuple[int, int] = (2,2)
+DEFAULT_CNN_OUT_CHANNEL: int = 20
+DEFAULT_CNN_KERNEL_SIZE: Tuple[int, int] = (5,5)
+DEFAULT_CNN_POOL_KERNEL_SIZE: Tuple[int, int] = (2,2)
+DEFAULT_CNN_POOL_STRIDE: Tuple[int, int] = (2,2)
 
-DEFAULT_IN_FEATURES : int = 800
-DEFAULT_OUT_FEATURES : int = 500
+DEFAULT_IN_FEATURES: int = 800
+DEFAULT_OUT_FEATURES: int = 500
+
 
 class CNN_Baseline(Module):
 
-    def __init__(self, numChannels : int, classes : int):
+    def __init__(self, numChannels: int, classes: int):
+
         super(CNN_Baseline, self).__init__()
-        
-        self.convLayer_1 : Conv2d = Conv2d(in_channels=numChannels, out_channels=DEFAULT_CNN_OUT_CHANNEL, kernel_size=DEFAULT_CNN_KERNEL_SIZE)
+        self.convLayer_1: Conv2d = Conv2d(in_channels=numChannels, out_channels=DEFAULT_CNN_OUT_CHANNEL, kernel_size=DEFAULT_CNN_KERNEL_SIZE)
         self.relu_1  : ReLU = ReLU()
         self.maxPool2D_1 : MaxPool2d = MaxPool2d(kernel_size=DEFAULT_CNN_POOL_KERNEL_SIZE,stride=DEFAULT_CNN_POOL_STRIDE )
 

@@ -43,7 +43,6 @@ class SmokerDataset(Dataset):
     def __init__(self, dataframe : pd.DataFrame, transforms_ : v2.Compose = DEFAULT_IMG_TRAIN_TRANSFORMATION):
         self.df : pd.DataFrame = dataframe
         self.transformations_ : v2.Compose = transforms_
-
     def __len__(self):
         return len(self.df)
     
@@ -65,6 +64,7 @@ class MainSmokerDataset():
         self.validationDataPath : str = validationData
         self.testingDataPath : str = None 
         self.classes : List[str] = classes
+        self.c: torch.Tensor 
         
         if (testingData != None and type(testingData) == str):
             self.testingDataPath : str = testingData
