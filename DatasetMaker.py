@@ -16,13 +16,13 @@ from glob import glob
 
 from torchvision.transforms import v2
 from typing import List, Dict
-
-RESIZE_IMG: int = 256
+from torch.nn.functional import one_hot
+RESIZE_IMG: int = 64
 BATCH_SIZE: int = 16
 
 DEFAULT_IMG_TRAIN_TRANSFORMATION: v2.Compose = v2.Compose([
-    v2.Resize(RESIZE_IMG),
-    v2.RandomResizedCrop(size=(224, 224), antialias=True),
+    v2.Resize((RESIZE_IMG, RESIZE_IMG)),
+    v2.RandomResizedCrop(size=(RESIZE_IMG, RESIZE_IMG), antialias=True),
     v2.RandomHorizontalFlip(p=0.5),
     v2.RandomVerticalFlip(p=0.5),
     v2.RandomAffine(degrees=(-10, 10), translate=(0.1, 0.1), scale=(0.9, 1.1)),
@@ -35,7 +35,7 @@ DEFAULT_IMG_TRAIN_TRANSFORMATION: v2.Compose = v2.Compose([
 DEFAULT_IMG_TEST_TRANSFORMATION: v2.Compose = v2.Compose([
     v2.Resize(RESIZE_IMG),
     v2.PILToTensor(),
-    v2.ToDtype(),
+    v2.ToDtype(torch.float32),
     v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
@@ -52,7 +52,7 @@ class SmokerDataset(Dataset):
     def __getitem__(self, index):
         image_path: str = self.df.iloc[index, 0]
         img: Image = Image.open(image_path).convert("RGB")
-        transformed_img: torch.Tensor = self.transformations_(img)
+        transformed_img: torch.Tensor = self.transformations(img)
         class_id: int = self.df.iloc[index, -1]
         return transformed_img, class_id
 
@@ -86,20 +86,20 @@ class MainSmokerDataset():
         self.columnsDf: List[str] = columns_df
 
     def makeDataFrame(self, targetPath: str):
-        image_list: List[str] = glob(os.path.join(targetPath, "/*.jpg"))
+        image_list: List[str] = os.listdir(targetPath)
         localDataFrame: pd.DataFrame = pd.DataFrame(columns=self.columnsDf)
         for image in image_list:
             fileName: str = os.path.splitext(image)[0].split("/")[-1]
             if fileName[0:len(self.classes[0])] == self.classes[0]:
-                dictData: Dict[str, str] = {self.columnsDf[0]: image,
+                dictData: Dict[str, str] = {self.columnsDf[0]: os.path.join(targetPath, image),
                                             self.columnsDf[1]: self.classes[0],
                                             self.columnsDf[2]: 0
                                             }
                 newData: pd.DataFrame = pd.DataFrame(dictData, index=[1])
                 localDataFrame = pd.concat([localDataFrame, newData],
                                            ignore_index=True)
-            elif fileName[0:len(self.classes[1]) == self.classes[1]]:
-                dictData: Dict[str, str] = {self.columnsDf[0]: image,
+            elif fileName[0:len(self.classes[1])] == self.classes[1]:
+                dictData: Dict[str, str] = {self.columnsDf[0]: os.path.join(targetPath, image),
                                             self.columnsDf[1]: self.classes[1],
                                             self.columnsDf[2]: 1
                                             }
@@ -125,5 +125,6 @@ class MainSmokerDataset():
                                           batch_size=batchSize,
                                           shuffle=True)
         self.validationDataLoader = DataLoader(self.validationDataset,
-                                               batch_size=batchSize)
+                                               batch_size=batchSize,
+                                               )
         self.testDataLoader = DataLoader(self.testDataset)
