@@ -17,10 +17,10 @@ from glob import glob
 from torchvision.transforms import v2
 from typing import List, Dict
 
-RESIZE_IMG : int = 256
-BATCH_SIZE : int = 16
+RESIZE_IMG: int = 256
+BATCH_SIZE: int = 16
 
-DEFAULT_IMG_TRAIN_TRANSFORMATION : v2.Compose = v2.Compose([
+DEFAULT_IMG_TRAIN_TRANSFORMATION: v2.Compose = v2.Compose([
     v2.Resize(RESIZE_IMG),
     v2.RandomResizedCrop(size=(224, 224), antialias=True),
     v2.RandomHorizontalFlip(p=0.5),
@@ -32,93 +32,98 @@ DEFAULT_IMG_TRAIN_TRANSFORMATION : v2.Compose = v2.Compose([
     v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
-DEFAULT_IMG_TEST_TRANSFORMATION : v2.Compose = v2.Compose([
+DEFAULT_IMG_TEST_TRANSFORMATION: v2.Compose = v2.Compose([
     v2.Resize(RESIZE_IMG),
     v2.PILToTensor(),
     v2.ToDtype(),
     v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
+
 class SmokerDataset(Dataset):
-    def __init__(self, dataframe : pd.DataFrame, transforms_ : v2.Compose = DEFAULT_IMG_TRAIN_TRANSFORMATION):
-        self.df : pd.DataFrame = dataframe
-        self.transformations_ : v2.Compose = transforms_
+    def __init__(self, dataframe: pd.DataFrame,
+                 transforms: v2.Compose = DEFAULT_IMG_TRAIN_TRANSFORMATION):
+        self.df: pd.DataFrame = dataframe
+        self.transformations: v2.Compose = transforms
+
     def __len__(self):
         return len(self.df)
-    
-    def __getitem__(self, index) :
-        image_path : str = self.df.iloc[index,0]
-        img : Image = Image.open(image_path).convert("RGB")
-        transformed_img : torch.Tensor = self.transformations_(img)
-        class_id : int = self.df.iloc[index, -1]
+
+    def __getitem__(self, index):
+        image_path: str = self.df.iloc[index, 0]
+        img: Image = Image.open(image_path).convert("RGB")
+        transformed_img: torch.Tensor = self.transformations_(img)
+        class_id: int = self.df.iloc[index, -1]
         return transformed_img, class_id
-        
-    
+
+
 class MainSmokerDataset():
-    def __init__(self, trainData : str, validationData : str,
-                 testingData : str = None, numClasses : int = 2,
-                 classes : List[str] = ["notsmoking", "smoking"], columns_df :List[str] = []
+    def __init__(self, trainData: str, validationData: str,
+                 testingData: str = None, numClasses: int = 2,
+                 classes: List[str] = ["notsmoking", "smoking"],
+                 columns_df: List[str] = []
                  ):
-        
-        self.trainDataPath : str = trainData
-        self.validationDataPath : str = validationData
-        self.testingDataPath : str = None 
-        self.classes : List[str] = classes
-        self.c: torch.Tensor 
-        
-        if (testingData != None and type(testingData) == str):
-            self.testingDataPath : str = testingData
-        
-        self.trainDataFrame : pd.DataFrame = pd.DataFrame(columns=columns_df)
-        self.validationDataFrame : pd.DataFrame = pd.DataFrame(columns=columns_df)
-        self.testDataFrame  : pd.DataFrame = pd.DataFrame(columns=columns_df)
-        
-        self.trainDataset : Dataset = None
-        self.validationDataset : Dataset = None
-        self.testDataset : Dataset = None
-        
-        self.trainDataLoader : DataLoader = None
-        self.validationDataLoader : DataLoader = None
-        self.testDataLoader : DataLoader = None
-        
-        self.columnsDf  : List[str] = columns_df
-    
-    def makeDataFrame(self, targetPath : str):
-        
-        image_list : List[str] =glob(os.path.join(targetPath, "/*.jpg"))
-        localDataFrame : pd.DataFrame = pd.DataFrame(columns=self.columnsDf)
+        self.trainDataPath: str = trainData
+        self.validationDataPath: str = validationData
+        self.testingDataPath: str = None
+        self.classes: List[str] = classes
+        self.c: torch.Tensor
+        if (testingData is not None and type(testingData) is str):
+            self.testingDataPath: str = testingData
+        # Train Dataframe preps
+        self.trainDataFrame: pd.DataFrame = pd.DataFrame(columns=columns_df)
+        self.validationDataFrame: pd.DataFrame = pd.DataFrame(columns=columns_df)
+        self.testDataFrame: pd.DataFrame = pd.DataFrame(columns=columns_df)
+        # Dataset torch for loader
+        self.trainDataset: Dataset = None
+        self.validationDataset: Dataset = None
+        self.testDataset: Dataset = None
+        # DataLoader torch for training
+        self.trainDataLoader: DataLoader = None
+        self.validationDataLoader: DataLoader = None
+        self.testDataLoader: DataLoader = None
+        # This just default column names
+        self.columnsDf: List[str] = columns_df
+
+    def makeDataFrame(self, targetPath: str):
+        image_list: List[str] = glob(os.path.join(targetPath, "/*.jpg"))
+        localDataFrame: pd.DataFrame = pd.DataFrame(columns=self.columnsDf)
         for image in image_list:
-            fileName : str = os.path.splitext(image)[0].split("/")[-1]
+            fileName: str = os.path.splitext(image)[0].split("/")[-1]
             if fileName[0:len(self.classes[0])] == self.classes[0]:
-                dictData : Dict[str, str] = {self.columnsDf[0] : image,
-                                             self.columnsDf[1] : self.classes[0],
-                                             self.columnsDf[2] : 0
-                                             }
-                newData : pd.DataFrame = pd.DataFrame(dictData, index=[1])
-                localDataFrame = pd.concat([localDataFrame, newData], ignore_index=True)
-            
+                dictData: Dict[str, str] = {self.columnsDf[0]: image,
+                                            self.columnsDf[1]: self.classes[0],
+                                            self.columnsDf[2]: 0
+                                            }
+                newData: pd.DataFrame = pd.DataFrame(dictData, index=[1])
+                localDataFrame = pd.concat([localDataFrame, newData],
+                                           ignore_index=True)
             elif fileName[0:len(self.classes[1]) == self.classes[1]]:
-                dictData : Dict[str, str] = {self.columnsDf[0] : image,
-                                             self.columnsDf[1] : self.classes[1],
-                                             self.columnsDf[2] : 1
-                                             }
-                newData : pd.DataFrame = pd.DataFrame(dictData, index=[1])
-                localDataFrame = pd.concat([localDataFrame, newData], ignore_index=True)
-                
-        if(targetPath == self.trainDataPath):
+                dictData: Dict[str, str] = {self.columnsDf[0]: image,
+                                            self.columnsDf[1]: self.classes[1],
+                                            self.columnsDf[2]: 1
+                                            }
+                newData: pd.DataFrame = pd.DataFrame(dictData, index=[1])
+                localDataFrame = pd.concat([localDataFrame, newData],
+                                           ignore_index=True)
+        # Assigning df
+        if (targetPath == self.trainDataPath):
             self.trainDataFrame = localDataFrame
-        elif(targetPath == self.validationDataPath):
+        elif (targetPath == self.validationDataPath):
             self.validationDataFrame = localDataFrame
-        elif(targetPath == self.testingDataPath):
+        elif (targetPath == self.testingDataPath):
             self.testDataFrame = localDataFrame
-        
-    def makeDataset(self): 
-        self.trainDataset : SmokerDataset = SmokerDataset(self.trainDataFrame)
-        self.validationDataset : SmokerDataset = SmokerDataset(self.validationDataFrame)
-        self.testDataset : SmokerDataset = SmokerDataset(self.testDataFrame)
-         
-    def makeDataLoader(self, batchSize : int):         
-        self.trainDataLoader = DataLoader(self.trainDataset, batch_size=batchSize, shuffle=True)
-        self.validationDataLoader =  DataLoader(self.validationDataset, batch_size=batchSize)
+    # Make Dataset instance
+
+    def makeDataset(self):
+        self.trainDataset: SmokerDataset = SmokerDataset(self.trainDataFrame)
+        self.validationDataset: SmokerDataset = SmokerDataset(self.validationDataFrame)
+        self.testDataset: SmokerDataset = SmokerDataset(self.testDataFrame)
+
+    def makeDataLoader(self, batchSize: int):
+        self.trainDataLoader = DataLoader(self.trainDataset,
+                                          batch_size=batchSize,
+                                          shuffle=True)
+        self.validationDataLoader = DataLoader(self.validationDataset,
+                                               batch_size=batchSize)
         self.testDataLoader = DataLoader(self.testDataset)
-    
