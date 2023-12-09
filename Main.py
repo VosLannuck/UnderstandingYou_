@@ -5,6 +5,7 @@ import mlflow
 from Baseline_CNN import CNN_Baseline
 from Baseline_Resnet import BaselineResnet, ResidualBlock
 from Baseline_VGG import VGG_Baseline_16
+from Baseline_AlexNet import AlexNet
 from DatasetMaker import MainSmokerDataset
 from Trainer import Trainer
 
@@ -47,12 +48,17 @@ arg.add_argument("-nc", "--num_classes", type=str, default=2)
 arg.add_argument("-img", "--image_size", type=int, default=IMG_SIZE)
 args = vars(arg.parse_args())
 
-cnnModel: CNN_Baseline = CNN_Baseline(3, classes=NUM_CLASSES)
-cnnModel.to(device)
-summary(cnnModel, (3, IMG_SIZE, IMG_SIZE))
+# cnnModel: CNN_Baseline = CNN_Baseline(3, classes=NUM_CLASSES)
+# cnnModel.to(device)
+# summary(cnnModel, (3, IMG_SIZE, IMG_SIZE))
 
 # vggModel: VGG_Baseline_16 = VGG_Baseline_16(numClasses=NUM_CLASSES)
 # resnetMode: BaselineResnet = BaselineResnet()
+
+alexNetModel: AlexNet = AlexNet(num_classes=NUM_CLASSES)
+summary(alexNetModel, (3, IMG_SIZE, IMG_SIZE))
+
+
 mainSmokerDatasetMaker: MainSmokerDataset = MainSmokerDataset(
     trainData=args['training_path'],
     validationData=args['valid_path'],
@@ -77,5 +83,7 @@ trainer: Trainer = Trainer(
     testDataLoader,
 )
 cls = CrossEntropyLoss()
-trainer.TrainModel(cnnModel, cls,
-                   AdamW(params=cnnModel.parameters(), lr=INIT_LR))
+# trainer.TrainModel(cnnModel, cls,
+#                    AdamW(params=cnnModel.parameters(), lr=INIT_LR))
+
+trainer.TrainModel(alexNetModel, cls, AdamW(params=alexNetModel.parameters(), lr=INIT_LR))
