@@ -17,7 +17,8 @@ from glob import glob
 from torchvision.transforms import v2
 from typing import List, Dict
 from torch.nn.functional import one_hot
-RESIZE_IMG: int = 64
+IMG_SIZE_TESTING: int = 64
+RESIZE_IMG: int = IMG_SIZE_TESTING # 224
 BATCH_SIZE: int = 16
 
 DEFAULT_IMG_TRAIN_TRANSFORMATION: v2.Compose = v2.Compose([

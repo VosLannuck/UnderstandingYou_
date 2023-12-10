@@ -1,6 +1,7 @@
 import torch
 import os
 import numpy as np
+import mlflow
 
 from torch.utils.data import DataLoader
 from torch.nn import (CrossEntropyLoss, Module)
@@ -84,25 +85,36 @@ class Trainer():
 
     def TrainModel(self, model: Module, loss_fn: CrossEntropyLoss,
                    optimizer: torch.optim.Optimizer, epoch: int = 5,
-                   lr: float = 1e-3, checkpointPath: str = "checkpoints"):
+                   lr: float = 1e-3, checkpointPath: str = "checkpoints",
+                   model_name: str = "cnn_vanilla"):
         if (not os.path.isdir(checkpointPath)):
-            os.mkdir(checkpointPath)
+            os.mkdir(os.path.join(checkpointPath, model_name))
         model.to(device)
         best_loss: float = np.inf
-        for epoch in tqdm(range(epoch)):
-            train_acc, train_loss = self.train_step(model, loss_fn, optimizer)
-            val_acc, val_loss = self.test_or_eval_step(model, loss_fn, self.validationDataLoader)
-            print("Epoch : %g " % (epoch))
-            print(f"TrainLoss : {train_loss:.4f}, TrainAcc : {train_acc:.4f}")
-            print(f"ValLoss : {val_loss:.4f}, ValAcc : {val_acc:.4f}")
-            # Log
-            self.logs["train_loss"].append(train_loss)
-            self.logs["train_acc"].append(train_acc)
-            self.logs["val_loss"].append(val_loss)
-            self.logs["val_acc"].append(val_acc)
-            # Model Saving
-            torch.save(model.state_dict(), "checkpoints/last.pth")
-            if val_loss < best_loss:
-                best_loss = val_loss
-                torch.save(model.state_dict(), "checkpoints/best.pth")
-        print("Training done ")
+        with mlflow.start_run():
+            mlflow.log_param("lr", lr)
+            mlflow.log_param("epochs", epoch)
+            mlflow.log_param("model_name", model_name)
+            for epoch in tqdm(range(epoch)):
+                train_acc, train_loss = self.train_step(model, loss_fn,
+                                                        optimizer)
+                val_acc, val_loss = self.test_or_eval_step(model, loss_fn,
+                                                           self.validationDataLoader)
+                print("Epoch : %g " % (epoch))
+                print(f"TrainLoss : {train_loss:.4f}, TrainAcc : {train_acc:.4f}")
+                print(f"ValLoss : {val_loss:.4f}, ValAcc : {val_acc:.4f}")
+                # Log
+                self.logs["train_loss"].append(train_loss)
+                self.logs["train_acc"].append(train_acc)
+                self.logs["val_loss"].append(val_loss)
+                self.logs["val_acc"].append(val_acc)
+                # Model Saving
+                torch.save(model.state_dict(), "checkpoints/last.pth")
+                if val_loss < best_loss:
+                    best_loss = val_loss
+                    torch.save(model.state_dict(), "checkpoints/best.pth")
+                mlflow.log_metric(key="train_loss", value=train_loss, step=epoch)
+                mlflow.log_metric(key="train_acc", value=train_acc, step=epoch)
+                mlflow.log_metric(key="val_loss", value=val_loss, step=epoch)
+                mlflow.log_metric(key="val_acc", value=val_acc, step=epoch)
+            print("Training done ")

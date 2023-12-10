@@ -15,7 +15,7 @@ VGG_DEFAULT_POOL_STRIDE: int = 2
 class VGG_Baseline_16(Module):
 
     def __init__(self, numClasses: int = 2):
-        super(VGG_Baseline_16).__init__()
+        super(VGG_Baseline_16, self).__init__()
 
         self.layer_1 = torch.nn.Sequential(
             Conv2d(
@@ -181,7 +181,7 @@ class VGG_Baseline_16(Module):
 
         self.fc_layer_1: torch.nn.Sequential = torch.nn.Sequential(
             Dropout(0.5),
-            Linear(7*7*512, 4096),
+            Linear(6*6*512, 4096),
             ReLU()
         )
 
@@ -209,7 +209,7 @@ class VGG_Baseline_16(Module):
         out = self.layer_11(out)
         out = self.layer_12(out)
         out = self.layer_13(out)
-        out = Flatten(out)
+        out = out.reshape(out.size(0), -1)
         out = self.fc_layer_1(out)
         out = self.fc_layer_2(out)
         out = self.fc_layer_3(out)
