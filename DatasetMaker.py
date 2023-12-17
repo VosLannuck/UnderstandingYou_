@@ -1,51 +1,51 @@
-#%%
-""" 
+"""
     Dataset preparation file.
-    Created by : Vos 
+    Created by : Vos
     Date : Today
 """
 
+
 import torch
 from torch.utils.data import (Dataset, DataLoader)
-
 import pandas as pd
 import os
-
 from PIL import Image
-from glob import glob
-
 from torchvision.transforms import v2
 from typing import List, Dict
-from torch.nn.functional import one_hot
-IMG_SIZE_TESTING: int = 64
-RESIZE_IMG: int = IMG_SIZE_TESTING # 224
-BATCH_SIZE: int = 16
 
-DEFAULT_IMG_TRAIN_TRANSFORMATION: v2.Compose = v2.Compose([
-    v2.Resize((RESIZE_IMG, RESIZE_IMG)),
-    v2.RandomResizedCrop(size=(RESIZE_IMG, RESIZE_IMG), antialias=True),
-    v2.RandomHorizontalFlip(p=0.5),
-    v2.RandomVerticalFlip(p=0.5),
-    v2.RandomAffine(degrees=(-10, 10), translate=(0.1, 0.1), scale=(0.9, 1.1)),
-    v2.RandomErasing(p=0.5, scale=(0.1, 0.15)),
-    v2.PILToTensor(),
-    v2.ToDtype(torch.float32),
-    v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-])
 
-DEFAULT_IMG_TEST_TRANSFORMATION: v2.Compose = v2.Compose([
-    v2.Resize(RESIZE_IMG),
-    v2.PILToTensor(),
-    v2.ToDtype(torch.float32),
-    v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-])
+def getImgTransformation(resize_img: int,
+                         transformation_type: str = "train"):
+    if (transformation_type == "test"):
+        img_test_transform: v2.Compose = v2.Compose([
+            v2.Resize(resize_img),
+            v2.PILToTensor(),
+            v2.ToDtype(torch.float32),
+            v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])
+        return img_test_transform
+
+    img_transformation: v2.Compose = v2.Compose([
+        v2.Resize((resize_img, resize_img)),
+        v2.RandomResizedCrop(size=(resize_img, resize_img), antialias=True),
+        v2.RandomHorizontalFlip(p=0.5),
+        v2.RandomVerticalFlip(p=0.5),
+        v2.RandomAffine(degrees=(-10, 10), translate=(0.1, 0.1), scale=(0.9, 1.1)),
+        v2.RandomErasing(p=0.5, scale=(0.1, 0.15)),
+        v2.PILToTensor(),
+        v2.ToDtype(torch.float32),
+        v2.Normalize(mean=[0.485, 0.456, 0.406],
+                     std=[0.229, 0.224, 0.225])
+    ])
+    return img_transformation
 
 
 class SmokerDataset(Dataset):
     def __init__(self, dataframe: pd.DataFrame,
-                 transforms: v2.Compose = DEFAULT_IMG_TRAIN_TRANSFORMATION):
+                 img_size: int,
+                 transform_type: str = "train"):
         self.df: pd.DataFrame = dataframe
-        self.transformations: v2.Compose = transforms
+        self.transformations: v2.Compose = getImgTransformation(img_size, transform_type)
 
     def __len__(self):
         return len(self.df)
@@ -87,6 +87,7 @@ class MainSmokerDataset():
         self.columnsDf: List[str] = columns_df
 
     def makeDataFrame(self, targetPath: str):
+        print(targetPath)
         image_list: List[str] = os.listdir(targetPath)
         localDataFrame: pd.DataFrame = pd.DataFrame(columns=self.columnsDf)
         for image in image_list:
@@ -116,10 +117,13 @@ class MainSmokerDataset():
             self.testDataFrame = localDataFrame
     # Make Dataset instance
 
-    def makeDataset(self):
-        self.trainDataset: SmokerDataset = SmokerDataset(self.trainDataFrame)
-        self.validationDataset: SmokerDataset = SmokerDataset(self.validationDataFrame)
-        self.testDataset: SmokerDataset = SmokerDataset(self.testDataFrame)
+    def makeDataset(self, img_size: int):
+        self.trainDataset: SmokerDataset = SmokerDataset(self.trainDataFrame,
+                                                         img_size)
+        self.validationDataset: SmokerDataset = SmokerDataset(self.validationDataFrame,
+                                                              img_size)
+        self.testDataset: SmokerDataset = SmokerDataset(self.testDataFrame,
+                                                        img_size)
 
     def makeDataLoader(self, batchSize: int):
         self.trainDataLoader = DataLoader(self.trainDataset,

@@ -3,10 +3,12 @@ import os
 import numpy as np
 import mlflow
 
+from ray import train
 from torch.utils.data import DataLoader
 from torch.nn import (CrossEntropyLoss, Module)
 from tqdm import tqdm
 from typing import List, Tuple, Dict
+from Enums import ModelName
 
 device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -64,7 +66,6 @@ class Trainer():
         with torch.no_grad():
             model.eval()
             for data, target in dataLoader:
-                print(data.shape)
                 target: torch.Tensor = target.type(torch.LongTensor)
                 # Convert to gpu
                 data: torch.Tensor = data.to(device)
@@ -80,22 +81,28 @@ class Trainer():
                 totalObservation += target.shape[0]
         avgCorrect: int = correct_prediction / totalObservation
         avgLoss: float = currentLossTotal / num_batches
-        print(currentLossTotal)
         return avgCorrect, avgLoss
 
     def TrainModel(self, model: Module, loss_fn: CrossEntropyLoss,
                    optimizer: torch.optim.Optimizer, epoch: int = 5,
                    lr: float = 1e-3, checkpointPath: str = "checkpoints",
-                   model_name: str = "cnn_vanilla"):
-        if (not os.path.isdir(checkpointPath)):
-            os.mkdir(os.path.join(checkpointPath, model_name))
+                   model_name: str = ModelName.vanilla_cnn.__str__(),
+                   is_hyperparams: bool = False,
+                   ):
+        if not is_hyperparams:
+            if (not os.path.isdir(checkpointPath)):
+                os.mkdir(checkpointPath)
+
+            sub_dir: str = os.path.join(checkpointPath, model_name)
+            if (not os.path.isdir(sub_dir)):
+                os.mkdir(sub_dir)
         model.to(device)
         best_loss: float = np.inf
         with mlflow.start_run():
             mlflow.log_param("lr", lr)
             mlflow.log_param("epochs", epoch)
             mlflow.log_param("model_name", model_name)
-            for epoch in tqdm(range(epoch)):
+            for epoch in tqdm(range(int(epoch))):
                 train_acc, train_loss = self.train_step(model, loss_fn,
                                                         optimizer)
                 val_acc, val_loss = self.test_or_eval_step(model, loss_fn,
@@ -109,12 +116,16 @@ class Trainer():
                 self.logs["val_loss"].append(val_loss)
                 self.logs["val_acc"].append(val_acc)
                 # Model Saving
-                torch.save(model.state_dict(), "checkpoints/last.pth")
+                if not is_hyperparams:
+                    torch.save(model.state_dict(), os.path.join(sub_dir,
+                                                                "last.pth"))
                 if val_loss < best_loss:
                     best_loss = val_loss
-                    torch.save(model.state_dict(), "checkpoints/best.pth")
+                    if not is_hyperparams:
+                        torch.save(model.state_dict(), os.path.join(sub_dir,
+                                                                    "best.pth"))
                 mlflow.log_metric(key="train_loss", value=train_loss, step=epoch)
                 mlflow.log_metric(key="train_acc", value=train_acc, step=epoch)
                 mlflow.log_metric(key="val_loss", value=val_loss, step=epoch)
                 mlflow.log_metric(key="val_acc", value=val_acc, step=epoch)
-            print("Training done ")
+                yield train_acc, train_loss, val_acc, val_loss

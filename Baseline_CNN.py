@@ -22,7 +22,7 @@ class CNN_Baseline(Module):
         self.fc1 = nn.Linear(179776, 512)
         self.relu1 = nn.ReLU()
         self.fc2 = nn.Linear(512, classes)
-    # Progresses data across layers    
+    # Progresses data across layers
 
     def forward(self, x: torch.Tensor):
         out = self.conv_layer1(x)
@@ -32,6 +32,7 @@ class CNN_Baseline(Module):
         out = self.conv_layer4(out)
         out = self.max_pool2(out)
         out = out.reshape(out.size(0), -1)
+        print(out.shape)
         out = self.fc1(out)
         out = self.relu1(out)
         out = self.fc2(out)

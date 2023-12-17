@@ -1,5 +1,5 @@
+#%%
 import torch
-import torchvision
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.misc
@@ -14,12 +14,17 @@ from PIL import Image
 from torchvision import models, transforms, utils
 from typing import List, Tuple
 
-class ModelName(Enum):
-    ALEXNET: int = 1
-    RESNET: int = 2
-    RESNET_18: int = 3
-    VGG: int = 4
+from CNN_testing import CNN_Testing
+from Baseline_CNN import CNN_Baseline
+from Baseline_AlexNet import AlexNet
+from Baseline_VGG import VGG_Baseline_16
+from Baseline_Resnet import ResidualBlock, BaselineResnet 
+from typing import Union
+from Enums import ModelName, ModelMethod
+from omegaconf import OmegaConf, DictConfig, ListConfig
 
+config: Union[DictConfig, ListConfig] = OmegaConf.load("params.yaml")
+NUM_CLASSES: int = 2
 
 transform: transforms.Compose = transforms.Compose([
     transforms.Resize((224, 224)),
@@ -34,28 +39,41 @@ def openImage(path: str) -> Image:
     return image
 
 
-def loadPretrained(modelName: ModelName) -> torch.nn.Module:
+def loadPretrained(modelMethod: ModelMethod) -> torch.nn.Module:
     model: torch.nn.Module
-    if (modelName == ModelName.ALEXNET):
+    if (modelMethod == ModelMethod.ALEXNET):
         model = models.alexnet(weights=models.AlexNet_Weights.DEFAULT)
-    elif (modelName == ModelName.RESNET):
-        model = models.resnet34(weights=models.ResNet34_Weights.DEFAULT)
-    elif (modelName == ModelName.VGG):
-        model = models.vgg16(weights=models.VGG16_Weights.DEFAULT)
-    elif (modelName == ModelName.RESNET_18):
+    elif (modelMethod == ModelMethod.RESNET):
         model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+    elif (modelMethod == ModelMethod.VGG):
+        model = models.vgg16(weights=models.VGG16_Weights.DEFAULT)
     return model
 
 
-def loadModelFromPath(modelName: str):
-    ...
+def loadModelFromPath(modelMethod: ModelMethod, path: str) -> nn.Module:
+    model: nn.Module = CNN_Testing(numChannels=3, classes=NUM_CLASSES)
+    if (modelMethod == ModelMethod.CNN):
+        model = CNN_Baseline(numChannels=3, classes=NUM_CLASSES)
+    elif (modelMethod == ModelMethod.ALEXNET):
+        model = AlexNet(num_classes=NUM_CLASSES)
+    elif (modelMethod == ModelMethod.VGG):
+        model = VGG_Baseline_16(numClasses=NUM_CLASSES)
+    elif (modelMethod == ModelMethod.RESNET):
+        model = BaselineResnet(ResidualBlock, numClasses=NUM_CLASSES)
+    elif (modelMethod == ModelMethod.VIT):
+        model = CNN_Testing(numChannels=NUM_CLASSES)
+    model.load_state_dict(torch.load(path))
+    return model
 
-def loadModel(modelName: ModelName, type_model: str = "pretrained") -> Module:
+
+def loadModel(modelMethod: ModelMethod,
+              type_model: str = "pretrained",
+              path: str = None) -> Module:
     model: Module
     if (type_model.lower() == "local"):
-        model = loadModelFromPath(modelName)
+        model = loadModelFromPath(modelMethod, path)
     else:
-        model = loadPretrained(modelName)
+        model = loadPretrained(modelMethod)
     return model
 
 
@@ -132,16 +150,18 @@ def plotFilters(filters: List[Tensor]):
         axes.set_title("Just layer", fontdict={"fontsize": 30})
 
 
-def run(modelName: str, type_model: str = "pretrained",
+def run(modelName: str, type_model: str = "pretrained", path: str= None,
         device: str = "cpu", image_path: str = "dog.jpg"):
     modelName = modelName.lower()
     model: Module
     if (modelName == "resnet"):
-        model = loadModel(ModelName.RESNET_18)
+        model = loadModel(ModelMethod.RESNET, type_model, path)
     elif (modelName == "alex"):
-        model = loadModel(ModelName.ALEXNET)
+        model = loadModel(ModelMethod.ALEXNET, type_model, path)
     elif (modelName == "vgg"):
-        model = loadModel(ModelName.VGG)
+        model = loadModel(ModelMethod.VGG, type_model, path)
+    elif (modelName == "cnn"):
+        model = loadModel(ModelMethod.CNN, type_model, path)
     model = model.to(device)
     model_weights, conv_layers = extractFeatureMaps(model)
     image = applyImageTransformation(image_path, device)
@@ -151,5 +171,5 @@ def run(modelName: str, type_model: str = "pretrained",
     plotFilters(filters)
 
 
-# if __name__ == "__main__":
-#    run("resnet")
+if __name__ == "__main__":
+    run("cnn", type_model="local", path=config.fme.cnn_testing_path_best)
