@@ -8,6 +8,7 @@ from datetime import datetime
 
 from ray import train, tune
 from ray.train._checkpoint import Checkpoint
+from ray.train import ScalingConfig
 from argparse import ArgumentParser
 from typing import List, Union
 from omegaconf import OmegaConf, DictConfig, ListConfig
@@ -53,9 +54,17 @@ args.add_argument("-d", "--device",
                   default=config.cmd.device, choices=supportedDevices)
 args.add_argument("-cp", "--checkpoint_path",
                   default=config.cmd.checkpoint_path)
+args.add_argument("-ns", "--num_samples",
+                  default=config.cmd.num_samples)
+args.add_argument("-wks", "--workers",
+                  default=config.cmd.num_workers)
+
 varargs = vars(args.parse_args())
 
 device: str = "cuda" if (torch.cuda.is_available() and varargs["device"] != "cpu") else "cpu"
+use_gpu: bool = False
+if device == "cuda":
+    use_gpu = True
 abs_path: str = os.path.abspath(os.curdir)
 train_path: str = os.path.join(abs_path, varargs["training_path"])
 valid_path: str = os.path.join(abs_path, varargs["valid_path"])
@@ -119,9 +128,13 @@ def run_hyperopts():
     algo = OptunaSearch()
 
     tuner = tune.Tuner(
-        objective_optimizer,
+        tune.with_resources(
+            tune.with_parameters(objective_optimizer),
+            resources= {"cpu": varargs["workers"]}
+
+        ),
         tune_config=tune.TuneConfig(
-            num_samples=1,
+            num_samples=varargs["num_samples"],
             metric="loss",
             mode="min",
             search_alg=algo,
@@ -129,7 +142,7 @@ def run_hyperopts():
         param_space=search_space
     )
     results = tuner.fit()
-    print("Best Configuration: ", results)
+    print("Best Configuration: ", results.get_best_result().config)
 
 
 run_hyperopts()
