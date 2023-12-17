@@ -1,0 +1,35 @@
+data:
+  training_path: "./Dataset/Training/"
+  validation_path: "./Dataset/Validation/"
+  testing_path: "./Dataset/Testing/"
+
+constant:
+  vanilla_cnn: "vanilla_cnn"
+  vanilla_vgg16: "vanilla_vgg16"
+  vanilla_resnet: "vanilla_resnet"
+  vanilla_alex: "vanilla_alex"
+  vit: "vit_swin"
+  
+  train_split: 0.75
+
+  batch_size: 64
+  lr: 0.001
+  img_size: 224
+  num_classes: 2
+  epoch: 10
+
+fme:
+  cnn_testing_path_best: "./checkpoints/vanilla_cnn/best.pth"
+  cnn_baseline_path_best: "./checkpoints/vanilla_cnn/best.pth"
+  vgg_baseline_path_best: "./checkpoints/vanilla_vgg16/best.pth"
+  resnet_baseline_path_best: "./checkpoints/vanilla_resnet/best.pth"
+  alexnet_baseline_path_best: "./checkpoints/vanilla_alex/best.pth"
+
+  cnn_testing_path_last: "./checkpoints/vanilla_cnn/last.pth"
+  cnn_baseline_path_last: "./checkpoints/vanilla_cnn/last.pth"
+  vgg_baseline_path_last: "./checkpoints/vanilla_vgg16/last.pth"
+  resnet_baseline_path_last: "./checkpoints/vanilla_resnet/last.pth"
+  alexnet_baseline_path_last: "./checkpoints/vanilla_alex/last.pth"
+
+test:
+  img_size: 64

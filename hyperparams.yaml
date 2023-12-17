@@ -1,0 +1,15 @@
+constant:
+  vanilla_cnn: "vanilla_cnn"
+  vanilla_alex: "vanilla_alex"
+  vanilla_vgg16: "vanilla_vgg16"
+  vanilla_resnet: "vanilla_resnet"
+
+cmd:
+  train_path: "Dataset/Training/"
+  valid_path: "Dataset/Validation/"
+  test_path: "Dataset/Testing/"
+  nc: 2
+  batch: 64
+  img_size: 224
+  device: "cpu"
+  checkpoint_path: "hyperopts_checkpoint"

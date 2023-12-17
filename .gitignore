@@ -3,3 +3,5 @@
 __pycache__/
 checkpoints
 mlruns/
+hyperopts_checkpoint/
+dog.jpg
