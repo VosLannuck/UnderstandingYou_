@@ -3,6 +3,18 @@
 -- Dataset
 [Smoker Detection Dataset](https://www.kaggle.com/datasets/sujaykapadnis/smoking/code)
 
+## File Description:
+- Baseline_AlexNet.py -> model only
+- Baseline_CNN.py -> model only
+- Baseline_Resnet.py -> model only
+- Baseline_VGG.py -> model only
+
+- DataPreps.py -> Create DataLoader for training
+- DatasetMaker.py -> Data preparations
+- FeatureMapsExtractor.py -> Extract the feature maps of a given image
+- ModelBuilder.py -> just like model hub
+- Trainer.py -> Where the training done
+
 ## Follow this notebook to run  ( if you're using colab )
 [Colab-Example](https://colab.research.google.com/drive/1_-OpAYvXGHCeNClTYBCiQm-ccfxeyPkK?usp=sharing)
 
