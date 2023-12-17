@@ -1,8 +1,8 @@
-import torch
+import torch 
 from torch import nn
 
 from torch.nn import (Conv2d, Linear, MaxPool2d,
-                      ReLU, BatchNorm2d, Sequential)
+                       ReLU, BatchNorm2d, Sequential)
 
 from typing import List
 

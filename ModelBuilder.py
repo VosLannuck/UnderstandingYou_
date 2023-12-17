@@ -40,10 +40,10 @@ def preserveModel(modelName: ModelName,
     elif (modelName == ModelName.vanilla_alex):
         alexNetModel: AlexNet = AlexNet(num_classes=num_classes).to(device)
         return alexNetModel
-    elif (modelName == ModelName.vanilla_resnet):
+    elif (modelName == ModelName.vanilla_vgg16):
         vggModel: VGG_Baseline_16 = VGG_Baseline_16(numClasses=num_classes).to(device)
         return vggModel
-    elif (modelName == ModelName.vanilla_vgg16):
+    elif (modelName == ModelName.vanilla_resnet):
         resnetModel: BaselineResnet = BaselineResnet(ResidualBlock,
                                                      numClasses=num_classes).to(device)
         return resnetModel

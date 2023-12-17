@@ -73,4 +73,4 @@ for _, _, _, _ in trainer.TrainModel(model, cls,
                                      AdamW(params=model.parameters(),
                                      lr=config.constant.lr), 
                                      model_name=modelName.__str__()):
-    print("This dude id doing training brah")
+    ...
