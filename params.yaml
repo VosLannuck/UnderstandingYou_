@@ -19,7 +19,7 @@ constant:
   lr: 0.001
   img_size: 224
   num_classes: 2
-  epoch: 15
+  epoch: 10
 
 fme:
   cnn_testing_path_best: "./checkpoints/vanilla_cnn/best.pth"
