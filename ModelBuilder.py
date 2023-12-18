@@ -26,11 +26,11 @@ def parseToModelName(config: Union[DictConfig, ListConfig],
     elif (modelstr == config.constant.vanilla_vgg16):
         return ModelName.vanilla_vgg16
     elif (modelstr == config.constant.pre_vgg16):
-        return ModelName.vanilla_vgg16
+        return ModelName.pretrained_vgg
     elif (modelstr == config.constant.pre_alex):
-        return ModelName.vanilla_alex
+        return ModelName.pretrained_alex
     elif (modelstr == config.constant.pre_resnet):
-        return ModelName.vanilla_resnet
+        return ModelName.pretrained_resnet
     else:
         return ModelName.testing
 
