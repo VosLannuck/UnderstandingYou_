@@ -9,6 +9,9 @@ constant:
   vanilla_resnet: "vanilla_resnet"
   vanilla_alex: "vanilla_alex"
   vit: "vit_swin"
+  pre_vgg16: "pretrained_vgg16"
+  pre_resnet: "pretrained_resnet"
+  pre_alex: "pretrained_alex"
   
   train_split: 0.75
 
@@ -16,7 +19,7 @@ constant:
   lr: 0.001
   img_size: 224
   num_classes: 2
-  epoch: 10
+  epoch: 15
 
 fme:
   cnn_testing_path_best: "./checkpoints/vanilla_cnn/best.pth"

@@ -1,3 +1,5 @@
+import PretrainedMain
+
 from Enums import ModelName
 from torch.nn import Module, Linear
 
@@ -7,9 +9,6 @@ from Baseline_CNN import CNN_Baseline
 from Baseline_Resnet import BaselineResnet, ResidualBlock
 from Baseline_VGG import VGG_Baseline_16
 from Baseline_AlexNet import AlexNet
-from DatasetMaker import MainSmokerDataset
-from Trainer import Trainer
-from Enums import ModelName
 from typing import Union
 
 from torchvision import models
@@ -26,6 +25,12 @@ def parseToModelName(config: Union[DictConfig, ListConfig],
         return ModelName.vanilla_resnet
     elif (modelstr == config.constant.vanilla_vgg16):
         return ModelName.vanilla_vgg16
+    elif (modelstr == config.constant.pre_vgg16):
+        return ModelName.vanilla_vgg16
+    elif (modelstr == config.constant.pre_alex):
+        return ModelName.vanilla_alex
+    elif (modelstr == config.constant.pre_resnet):
+        return ModelName.vanilla_resnet
     else:
         return ModelName.testing
 
@@ -33,7 +38,7 @@ def parseToModelName(config: Union[DictConfig, ListConfig],
 def preserveModel(modelName: ModelName,
                   device: str,
                   num_classes: int,
-                  ) -> Module:
+                 ) -> Module:
     if (modelName == ModelName.vanilla_cnn):
         cnnModel: CNN_Baseline = CNN_Baseline(3, classes=num_classes).to(device)
         return cnnModel
@@ -55,3 +60,12 @@ def preserveModel(modelName: ModelName,
     elif (modelName == ModelName.testing):
         cnn_testing: CNN_Testing = CNN_Testing(3, classes=num_classes).to(device)
         return cnn_testing
+    elif (modelName == ModelName.pretrained_alex):
+        alex: Module = PretrainedMain.getTrainableLayer(modelName, is_freeze=True).to(device)
+        return alex
+    elif (modelName == ModelName.pretrained_vgg):
+        vgg: Module = PretrainedMain.getTrainableLayer(modelName, is_freeze=True).to(device)
+        return vgg
+    elif (modelName == ModelName.pretrained_resnet):
+        resnet: Module = PretrainedMain.getTrainableLayer(modelName, is_freeze=True).to(device)
+        return resnet

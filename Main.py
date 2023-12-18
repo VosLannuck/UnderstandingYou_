@@ -24,7 +24,11 @@ supportedModels: List[str] = [
     config.constant.vanilla_cnn,
     config.constant.vanilla_alex,
     config.constant.vanilla_vgg16,
-    config.constant.vanilla_resnet
+    config.constant.vanilla_resnet,
+    config.constant.pre_vgg16,
+    config.constant.pre_alex,
+    config.constant.pre_resnet,
+    config.constant.vit
 ]
 
 
@@ -69,8 +73,9 @@ trainer: Trainer = Trainer(
     testDataLoader,
 )
 cls = CrossEntropyLoss()
-for _, _, _, _ in trainer.TrainModel(model, cls, 
+for _, _, _, _ in trainer.TrainModel(model, cls,
                                      AdamW(params=model.parameters(),
-                                     lr=config.constant.lr), 
-                                     model_name=modelName.__str__()):
+                                     lr=config.constant.lr),
+                                     epoch=config.constant.epoch,
+                                     model_name=modelName.name):
     ...
