@@ -58,7 +58,6 @@ args = vars(arg.parse_args())
 num_classes: int = args['num_classes']
 modelName: ModelName = ModelBuilder.parseToModelName(config, args["model"])
 model: Module = ModelBuilder.preserveModel(modelName, device, num_classes)
-
 summary(model, (3, config.constant.img_size, config.constant.img_size))
 trainDataLoader, validDataLoader, testDataLoader = DataPreps.makeDataset(args["training_path"],
                                                                          args["valid_path"],

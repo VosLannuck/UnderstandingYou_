@@ -31,6 +31,8 @@ def parseToModelName(config: Union[DictConfig, ListConfig],
         return ModelName.pretrained_alex
     elif (modelstr == config.constant.pre_resnet):
         return ModelName.pretrained_resnet
+    elif (modelstr == config.constant.vit):
+        return ModelName.vit
     else:
         return ModelName.testing
 
