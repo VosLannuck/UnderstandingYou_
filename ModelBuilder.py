@@ -12,7 +12,7 @@ from Baseline_AlexNet import AlexNet
 from typing import Union
 
 from torchvision import models
-from torchvision.models import  ViT_B_16_Weights
+from torchvision.models import Swin_T_Weights
 from torchvision.models.swin_transformer import SwinTransformer
 
 
@@ -56,7 +56,7 @@ def preserveModel(modelName: ModelName,
                                                      numClasses=num_classes).to(device)
         return resnetModel
     elif (modelName == ModelName.vit):
-        vit_model: SwinTransformer = models.swin_v2_t(weights=ViT_B_16_Weights).to(device)
+        vit_model: SwinTransformer = models.swin_v2_t(weights=Swin_T_Weights).to(device)
         vit_model.head = Linear(in_features=vit_model.head.in_features,
                                 out_features=num_classes).to(device)
         return vit_model

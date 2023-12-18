@@ -10,7 +10,7 @@ from Enums import ModelName
 from torch.nn import Module
 from torch.utils.data import DataLoader
 from torch.nn import CrossEntropyLoss
-from torch.optim import AdamW
+from torch.optim import AdamW, lr_scheduler
 from torchsummary import summary
 from torchvision import models
 from torchvision.models.swin_transformer import SwinTransformer
@@ -72,9 +72,22 @@ trainer: Trainer = Trainer(
     testDataLoader,
 )
 cls = CrossEntropyLoss()
-for _, _, _, _ in trainer.TrainModel(model, cls,
-                                     AdamW(params=model.parameters(),
-                                     lr=config.constant.lr),
+optimizer = AdamW(params=model.parameters(),
+                  lr=config.constant.lr)
+milestones: List[int] = [config.constant.lr_mile._1,
+                         config.constant.lr_mile._2,
+                         config.constant.lr_mile._3,
+                         config.constant.lr_mile._4,
+                         config.constant.lr_mile._5,
+                         config.constant.lr_mile._6,
+                         ]
+multi_step_scheduler = lr_scheduler.MultiStepLR(optimizer=optimizer,
+                                                milestones=milestones,
+                                                gamma=0.1)
+
+for _, _, _, _ in trainer.TrainModelHyperparamsTuner(model, cls,
+                                     optimizer,
+                                     multi_step_scheduler,
                                      epoch=config.constant.epoch,
                                      model_name=modelName.name):
     ...

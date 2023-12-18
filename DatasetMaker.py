@@ -26,7 +26,7 @@ def getImgTransformation(resize_img: int,
         return img_test_transform
 
     img_transformation: v2.Compose = v2.Compose([
-        v2.Resize((resize_img, resize_img)),
+        v2.Resize((256, 256)),
         v2.RandomResizedCrop(size=(resize_img, resize_img), antialias=True),
         v2.RandomHorizontalFlip(p=0.5),
         v2.RandomVerticalFlip(p=0.5),

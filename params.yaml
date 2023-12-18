@@ -16,10 +16,18 @@ constant:
   train_split: 0.75
 
   batch_size: 64
-  lr: 0.001
+  lr: 0.0001
   img_size: 224
   num_classes: 2
-  epoch: 10
+  epoch: 30
+  lr_mile:
+    _1: 5
+    _2: 10
+    _3: 15
+    _4: 20
+    _5: 25
+    _6: 30
+    
 
 fme:
   cnn_testing_path_best: "./checkpoints/vanilla_cnn/best.pth"
