@@ -106,7 +106,7 @@ def objective_optimizer(config):
     for _, _, val_acc, val_loss in trainer.TrainModel(model, criterion,
                                                       optimizer,
                                                       model_name=modelName.__str__(),
-                                                      is_hyperparams=True):
+                                                      is_hyperparams=True, epoch=10):
         os.makedirs(checkpoint_path_model, exist_ok=True)
         modelSaveName: str = "checkpoint.pt"
         torch.save((model.state_dict(), optimizer.state_dict()),

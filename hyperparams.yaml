@@ -13,5 +13,5 @@ cmd:
   img_size: 224
   device: "cpu"
   checkpoint_path: "hyperopts_checkpoint"
-  num_samples: 7
+  num_samples: 30
   num_workers: 5
