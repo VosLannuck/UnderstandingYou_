@@ -2,8 +2,8 @@ import torch
 from torch.nn import Module, Linear
 from omegaconf import OmegaConf, ListConfig, DictConfig
 from typing import Union, List, Dict, Tuple
-from torchvision.models import vgg16, resnet18, alexnet, swin_v2_s
-from torchvision.models import VGG16_Weights, ResNet18_Weights, AlexNet_Weights
+from torchvision.models import vgg16, resnet34, alexnet, swin_v2_s
+from torchvision.models import VGG16_Weights, ResNet34_Weights, AlexNet_Weights
 from torchvision.models.swin_transformer import SwinTransformer
 
 from Enums import ModelName
@@ -24,7 +24,7 @@ def preservePretrained(modelName: ModelName,
         net.classifier[6] = Linear(in_features=4096, out_features=2)
         features_layers, fc_layers, opt_layer = defineTrainableParamsForAlex()
     elif (modelName == ModelName.pretrained_resnet):
-        net: Module = resnet18(weights=ResNet18_Weights.DEFAULT)
+        net: Module = resnet34(weights=ResNet18_Weights.DEFAULT)
         net.fc = Linear(in_features=512, out_features=2)
         features_layers, fc_layers, opt_layer = defineTrainableParamsForResnet()
     else:
@@ -36,12 +36,12 @@ def getTrainableLayer(modelName: ModelName, is_freeze: bool = True) -> Module:
     model, features_layers, fc_layers, opt_layer = preservePretrained(modelName)
     if (is_freeze):
         for name, params in model.named_parameters():
+            print(name)
             params.requires_grad = False
             if name in opt_layer:
                 params.requires_grad = True
     else:
         for name, params in model.named_parameters():
-            print(name)
             if (name in features_layers):
                 params.requires_grad = True
             elif name in fc_layers:
@@ -146,7 +146,7 @@ def defineTrainableParamsForResnet():
                         config.res.fc.fc_b]
     return update_features_conv, update_fc_layer, update_opt_layer
 
-#model, _,_,_ = preservePretrained(ModelName.vit)
+model, _,_,_ = preservePretrained(ModelName.pretrained_resnet)
 #print(model.train())
 
-#getTrainableLayer(ModelName.pretrained_vgg, is_freeze=False)
+getTrainableLayer(ModelName.pretrained_resnet, is_freeze=False)

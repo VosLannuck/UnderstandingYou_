@@ -1,4 +1,4 @@
-import torch 
+import torch
 from torch import nn
 
 from torch.nn import (Conv2d, Linear, MaxPool2d,
@@ -10,17 +10,14 @@ from typing import List
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1, downsample=None):
         super(ResidualBlock, self).__init__()
-        self.conv1 = nn.Sequential(
-                        nn.Conv2d(in_channels, out_channels,
-                                  kernel_size=3, stride=stride, padding=1),
-                        nn.BatchNorm2d(out_channels),
-                        nn.ReLU())
+        self.conv1 = nn.Conv2d(in_channels, out_channels,
+                               kernel_size=3, stride=stride, padding=1)
+        self.bn1 = nn.BatchNorm2d(out_channels)
 
-        self.conv2 = nn.Sequential(
-                        nn.Conv2d(out_channels, out_channels,
-                                  kernel_size=3, stride=1,
-                                  padding=1),
-                        nn.BatchNorm2d(out_channels))
+        self.conv2 = nn.Conv2d(out_channels, out_channels,
+                               kernel_size=3, stride=1,
+                               padding=1)
+        self.bn2 = nn.BatchNorm2d(out_channels)
         self.downsample = downsample
         self.relu = nn.ReLU()
         self.out_channels = out_channels
@@ -28,7 +25,10 @@ class ResidualBlock(nn.Module):
     def forward(self, x):
         residual = x
         out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
         out = self.conv2(out)
+        out = self.bn2(out)
         if self.downsample:
             residual = self.downsample(x)
         out += residual
@@ -36,12 +36,11 @@ class ResidualBlock(nn.Module):
         return out
 
 
-class BaselineResnet(torch.nn.Module):
+class BaselineResnet(nn.Module):
 
     def __init__(self, residualBlock: ResidualBlock,
                  total_residualBlocks: List[int] = [3, 4, 6, 3],
                  numClasses: int = 2):
-
         super(BaselineResnet, self).__init__()
         self.inChannel: int = 64
         self.conv_1: Sequential() = Sequential(

@@ -7,7 +7,7 @@ import json
 import torch.nn as nn
 
 from matplotlib.pyplot import Axes
-from torch.nn import (Conv2d, Module)
+from torch.nn import (Conv2d, Module, Linear)
 from torch import Tensor
 from enum import Enum
 from PIL import Image
@@ -39,14 +39,23 @@ def openImage(path: str) -> Image:
     return image
 
 
-def loadPretrained(modelMethod: ModelMethod) -> torch.nn.Module:
+def loadPretrained(modelMethod: ModelMethod, path: str = None) -> torch.nn.Module:
     model: torch.nn.Module
     if (modelMethod == ModelMethod.ALEXNET):
         model = models.alexnet(weights=models.AlexNet_Weights.DEFAULT)
+        model.classifier[6] = Linear(in_features=4096,
+                                     out_features=NUM_CLASSES,
+                                     )
     elif (modelMethod == ModelMethod.RESNET):
         model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+        model.fc = Linear(in_features=512, out_features=2)
     elif (modelMethod == ModelMethod.VGG):
         model = models.vgg16(weights=models.VGG16_Weights.DEFAULT)
+        model.classifier[6] = Linear(in_features=4096,
+                                     out_features=NUM_CLASSES,
+                                     )
+    if path:
+        model.load_state_dict(torch.load(path))
     return model
 
 
@@ -88,7 +97,7 @@ def extractFeatureMaps(model: Module) -> Tuple[List[Tensor], List[Module]]:
             model_weights.append(model_children[i].weight)
             conv_layers.append(model_children[i])
             layer_counter += 1
-        elif (type(model_children[i]) is nn.Sequential):
+        elif (type(model_children[i]) is (nn.Sequential)):
             for j in range(len(model_children[i])):
                 layer: Module = model_children[i][j]
                 if (len(list(layer.children())) > 1):
@@ -102,7 +111,7 @@ def extractFeatureMaps(model: Module) -> Tuple[List[Tensor], List[Module]]:
                         model_weights.append(layer.weight)
                         conv_layers.append(layer)
                         layer_counter += 1
-    print("Total Conv Layer: ", layer_counter)
+    print("Total Conv Layer: ", len(conv_layers))
     return model_weights, conv_layers
 
 
@@ -141,13 +150,23 @@ def flattenFilters(outputs_conv: List[Tensor]) -> List[Tensor]:
     return flattenedFilter
 
 
-def plotFilters(filters: List[Tensor]):
+def plotFilters(filters: List[Tensor], layers_info):
     fig: plt.Figure = plt.figure(figsize=(20, 15))
-    for i in range(len(filters)):
+    for i in range(len(filters) ):
         axes: Axes = fig.add_subplot(5, 4, i+1)
         _ = plt.imshow(filters[i])
         axes.axis("off")
-        axes.set_title("Just layer", fontdict={"fontsize": 30})
+        axes.set_title("%s -%s" % (layers_info[i].__class__.__name__, i), fontdict={"fontsize": 30})
+
+
+def extractResultFeaturemaps(model: Module, device: str = "cpu",
+                             image_path="dog.jpg"):
+    model = model.to(device)
+    model_w, conv_layers = extractFeatureMaps(model)
+    image = applyImageTransformation(image_path, device)
+    outputs_conv, layers_info = generateFeatureMapsFromInput(image, conv_layers)
+    filters = flattenFilters(outputs_conv)
+    plotFilters(filters, layers_info)
 
 
 def run(modelName: str, type_model: str = "pretrained", path: str= None,
@@ -171,5 +190,5 @@ def run(modelName: str, type_model: str = "pretrained", path: str= None,
     plotFilters(filters)
 
 
-if __name__ == "__main__":
-    run("cnn", type_model="local", path=config.fme.cnn_testing_path_best)
+#if __name__ == "__main__":
+#    run("cnn", type_model="local", path=config.fme.cnn_testing_path_best)
