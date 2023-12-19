@@ -24,7 +24,7 @@ def preservePretrained(modelName: ModelName,
         net.classifier[6] = Linear(in_features=4096, out_features=2)
         features_layers, fc_layers, opt_layer = defineTrainableParamsForAlex()
     elif (modelName == ModelName.pretrained_resnet):
-        net: Module = resnet34(weights=ResNet18_Weights.DEFAULT)
+        net: Module = resnet34(weights=ResNet34_Weights.DEFAULT)
         net.fc = Linear(in_features=512, out_features=2)
         features_layers, fc_layers, opt_layer = defineTrainableParamsForResnet()
     else:
