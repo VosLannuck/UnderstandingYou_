@@ -3,53 +3,37 @@ import torch
 
 
 class AlexNet(nn.Module):
-    def __init__(self, num_classes=10):
+    def __init__(self, num_classes=2, dropout=0.5):
         super(AlexNet, self).__init__()
-        self.layer1 = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=4,
-                      stride=2, padding=1),  # Adjusted kernel size and stride
-            nn.BatchNorm2d(64),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2))  # Adjusted kernel size
-        self.layer2 = nn.Sequential(
-            nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(128),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2))  # Adjusted kernel size
-        self.layer3 = nn.Sequential(
-            nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(256),
-            nn.ReLU())
-        self.layer4 = nn.Sequential(
-            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(256),
-            nn.ReLU())
-        self.layer5 = nn.Sequential(
-            nn.Conv2d(256, 128, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(128),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2))  # Adjusted kernel size
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 64, kernel_size=11, stride=4, padding=2),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.Conv2d(64, 192, kernel_size=5, padding=2),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.Conv2d(192, 384, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(384, 256, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(256, 256, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+        )
         self.avgpool = nn.AdaptiveAvgPool2d((6, 6))
-        self.fc = nn.Sequential(
-            nn.Dropout(0.5),
-            nn.Linear(128 * 6 * 6, 2048),   # Adjusted the input size
-            nn.ReLU())
-        self.fc1 = nn.Sequential(
-            nn.Dropout(0.5),
-            nn.Linear(2048, 2048),
-            nn.ReLU())
-        self.fc2 = nn.Sequential(
-            nn.Linear(2048, num_classes))
+        self.classifier = nn.Sequential(
+            nn.Dropout(p=dropout),
+            nn.Linear(256 * 6 * 6, 4096),
+            nn.ReLU(inplace=True),
+            nn.Dropout(p=dropout),
+            nn.Linear(4096, 4096),
+            nn.ReLU(inplace=True),
+            nn.Linear(4096, num_classes),
+        )
 
-    def forward(self, x: torch.Tensor):
-        out = self.layer1(x)
-        out = self.layer2(out)
-        out = self.layer3(out)
-        out = self.layer4(out)
-        out = self.layer5(out)
-        out = self.avgpool(out)
-        out = out.reshape(out.size(0), -1)
-        out = self.fc(out)
-        out = self.fc1(out)
-        out = self.fc2(out)
-        return out
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.features(x)
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = self.classifier(x)
+        return x
