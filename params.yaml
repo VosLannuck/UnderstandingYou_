@@ -42,5 +42,13 @@ fme:
   resnet_baseline_path_last: "./checkpoints/vanilla_resnet/last.pth"
   alexnet_baseline_path_last: "./checkpoints/vanilla_alex/last.pth"
 
+  pretrained_vgg_path_best: "./checkpoints/pretrained_vgg/best.pth"
+  pretrained_resnet_path_best: "./checkpoints/pretrained_resnet/best.pth"
+  pretrained_alex_path_best: "./checkpoints/pretrained_alex/best.pth"
+
+  pretrained_vgg_path_last: "./checkpoints/pretrained_vgg/last.pth"
+  pretrained_resnet_path_last: "./checkpoints/pretrained_resnet/last.pth"
+  pretrained_alex_path_last: "./checkpoints/pretrained_alex/last.pth"
+
 test:
   img_size: 64
