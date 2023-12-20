@@ -5,7 +5,7 @@ constant:
   vanilla_resnet: "vanilla_resnet"
   pretrained_resnet: "pretrained_resnet"
   pretrained_alex: "pretrained_alex"
-  pretrained_vgg: "pretrained_vgg16"
+  pretrained_vgg16: "pretrained_vgg16"
 
 cmd:
   train_path: "Dataset/Training/"
