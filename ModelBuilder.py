@@ -56,7 +56,7 @@ def preserveModel(modelName: ModelName,
                                                      numClasses=num_classes).to(device)
         return resnetModel
     elif (modelName == ModelName.vit):
-        vit_model: SwinTransformer = models.swin_v2_t(weights=Swin_T_Weights).to(device)
+        vit_model: SwinTransformer = models.swin_v2_t(weights="DEFAULT").to(device)
         vit_model.head = Linear(in_features=vit_model.head.in_features,
                                 out_features=num_classes).to(device)
         return vit_model
