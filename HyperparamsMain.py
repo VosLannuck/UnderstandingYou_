@@ -31,6 +31,7 @@ supportedModels: List[str] = [
     config.constant.pre_alex,
     config.constant.pre_vgg16,
     config.constant.pre_resnet,
+    config.constant.vit
 ]
 
 supportedDevices: List[str] = [

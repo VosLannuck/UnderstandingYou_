@@ -6,6 +6,7 @@ constant:
   pre_resnet: "pretrained_resnet"
   pre_alex: "pretrained_alex"
   pre_vgg16: "pretrained_vgg16"
+  vit: "vit_swin"
 
 cmd:
   train_path: "Dataset/Training/"
