@@ -96,31 +96,31 @@ def objective_optimizer(config):
     trainer: Trainer = Trainer(trainLoader,
                                validLoader,
                                testLoader)
-    loaded_checkpoint: Checkpoint = train.get_checkpoint()
-    if loaded_checkpoint:
-        with loaded_checkpoint.as_directory() as loaded_checkpoint_dir:
-            model_state, optimizer_state = torch.load(loaded_checkpoint_dir,
-                                                      "checkpoint.pt")
-            model.load_state_dict(optimizer_state)
+   # loaded_checkpoint: Checkpoint = train.get_checkpoint()
+   # if loaded_checkpoint:
+        #with loaded_checkpoint.as_directory() as loaded_checkpoint_dir:
+           # model_state, optimizer_state = torch.load(loaded_checkpoint_dir,
+           #                                           "checkpoint.pt")
+           # model.load_state_dict(optimizer_state)
 
     for _, _, val_acc, val_loss in trainer.TrainModel(model, criterion,
                                                       optimizer,
                                                       model_name=modelName.__str__(),
                                                       is_hyperparams=True, epoch=10):
-        os.makedirs(checkpoint_path_model, exist_ok=True)
-        modelSaveName: str = "checkpoint.pt"
-        torch.save((model.state_dict(), optimizer.state_dict()),
-                   os.path.join(checkpoint_path_model,
-                                modelSaveName))
-        checkpoint: Checkpoint = Checkpoint.from_directory(checkpoint_path_model)
-        reportResult(val_acc, val_loss, checkpoint)
+        #os.makedirs(checkpoint_path_model, exist_ok=True)
+        #modelSaveName: str = "checkpoint.pt"
+        #torch.save((model.state_dict(), optimizer.state_dict()),
+        #           os.path.join(checkpoint_path_model,
+        #                        modelSaveName))
+        #checkpoint: Checkpoint = Checkpoint.from_directory(checkpoint_path_model)
+        reportResult(val_acc, val_loss)
 
 
 def reportResult(val_acc: float,
-                 val_loss: float, checkpoint: Checkpoint):
+                 val_loss: float, checkpoint: Checkpoint = None):
     repDict: Dict = {"loss": val_loss,
                      "acc": val_acc}
-    train.report(repDict, checkpoint=checkpoint)
+    train.report(repDict)
 
 
 def run_hyperopts():
