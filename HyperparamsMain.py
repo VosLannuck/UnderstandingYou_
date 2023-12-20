@@ -58,6 +58,8 @@ args.add_argument("-ns", "--num_samples",
                   default=config.cmd.num_samples)
 args.add_argument("-wks", "--workers",
                   default=config.cmd.num_workers)
+args.add_argument("-gpus","--gpus",
+                  default=config.cmd.num_gpus)
 
 varargs = vars(args.parse_args())
 
@@ -96,23 +98,10 @@ def objective_optimizer(config):
     trainer: Trainer = Trainer(trainLoader,
                                validLoader,
                                testLoader)
-   # loaded_checkpoint: Checkpoint = train.get_checkpoint()
-   # if loaded_checkpoint:
-        #with loaded_checkpoint.as_directory() as loaded_checkpoint_dir:
-           # model_state, optimizer_state = torch.load(loaded_checkpoint_dir,
-           #                                           "checkpoint.pt")
-           # model.load_state_dict(optimizer_state)
-
     for _, _, val_acc, val_loss in trainer.TrainModel(model, criterion,
                                                       optimizer,
                                                       model_name=modelName.__str__(),
                                                       is_hyperparams=True, epoch=10):
-        #os.makedirs(checkpoint_path_model, exist_ok=True)
-        #modelSaveName: str = "checkpoint.pt"
-        #torch.save((model.state_dict(), optimizer.state_dict()),
-        #           os.path.join(checkpoint_path_model,
-        #                        modelSaveName))
-        #checkpoint: Checkpoint = Checkpoint.from_directory(checkpoint_path_model)
         reportResult(val_acc, val_loss)
 
 
@@ -130,7 +119,7 @@ def run_hyperopts():
     tuner = tune.Tuner(
         tune.with_resources(
             tune.with_parameters(objective_optimizer),
-            resources= {"cpu": varargs["workers"]}
+            resources= {"cpu": varargs["workers"], "gpu": varargs["gpus"]}
 
         ),
         tune_config=tune.TuneConfig(

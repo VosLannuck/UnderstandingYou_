@@ -3,6 +3,9 @@ constant:
   vanilla_alex: "vanilla_alex"
   vanilla_vgg16: "vanilla_vgg16"
   vanilla_resnet: "vanilla_resnet"
+  pretrained_resnet: "pretrained_resnet"
+  pretrained_alex: "pretrained_alex"
+  pretrained_vgg: "pretrained_vgg16"
 
 cmd:
   train_path: "Dataset/Training/"
@@ -14,4 +17,5 @@ cmd:
   device: "cpu"
   checkpoint_path: "hyperopts_checkpoint"
   num_samples: 30
-  num_workers: 5
+  num_workers: 2
+  num_gpus: 1
