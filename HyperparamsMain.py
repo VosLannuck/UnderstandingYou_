@@ -28,9 +28,9 @@ supportedModels: List[str] = [
     config.constant.vanilla_alex,
     config.constant.vanilla_vgg16,
     config.constant.vanilla_resnet,
-    config.constant.pretrained_alex,
-    config.constant.pretrained_vgg16,
-    config.constant.pretrained_resnet,
+    config.constant.pre_alex,
+    config.constant.pre_vgg16,
+    config.constant.pre_resnet,
 ]
 
 supportedDevices: List[str] = [

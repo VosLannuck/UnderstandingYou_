@@ -3,9 +3,9 @@ constant:
   vanilla_alex: "vanilla_alex"
   vanilla_vgg16: "vanilla_vgg16"
   vanilla_resnet: "vanilla_resnet"
-  pretrained_resnet: "pretrained_resnet"
-  pretrained_alex: "pretrained_alex"
-  pretrained_vgg16: "pretrained_vgg16"
+  pre_resnet: "pretrained_resnet"
+  pre_alex: "pretrained_alex"
+  pre_vgg16: "pretrained_vgg16"
 
 cmd:
   train_path: "Dataset/Training/"
