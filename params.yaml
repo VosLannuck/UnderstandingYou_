@@ -30,6 +30,7 @@ constant:
   
   best_v_alex: 0.000109
   best_v_vgg16: 0.000104
+  best_v_cnn: 0.001
   best_v_resnet: 0.000318
   best_p_alex: 0.000339
   best_p_resnet: 0.006045
