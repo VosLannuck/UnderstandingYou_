@@ -18,6 +18,7 @@ from torch.nn import Linear
 from omegaconf import OmegaConf, DictConfig, ListConfig
 from typing import Union, List
 
+torch.manual_seed(0)
 config: Union[DictConfig, ListConfig] = OmegaConf.load("params.yaml")
 device: str = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 supportedModels: List[str] = [

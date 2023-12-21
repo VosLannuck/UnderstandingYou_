@@ -14,6 +14,7 @@ from torchvision.transforms import v2
 from typing import List, Dict
 
 
+
 def getImgTransformation(resize_img: int,
                          transformation_type: str = "train"):
     if (transformation_type == "test"):
@@ -128,7 +129,8 @@ class MainSmokerDataset():
     def makeDataLoader(self, batchSize: int):
         self.trainDataLoader = DataLoader(self.trainDataset,
                                           batch_size=batchSize,
-                                          shuffle=True)
+                                          shuffle=True,
+                                          )
         self.validationDataLoader = DataLoader(self.validationDataset,
                                                batch_size=batchSize,
                                                )
