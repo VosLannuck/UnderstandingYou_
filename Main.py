@@ -8,15 +8,12 @@ from Trainer import Trainer
 from Enums import ModelName
 
 from torch.nn import Module
-from torch.utils.data import DataLoader
 from torch.nn import CrossEntropyLoss
 from torch.optim import AdamW, lr_scheduler
 from torchsummary import summary
-from torchvision import models
-from torchvision.models.swin_transformer import SwinTransformer
-from torch.nn import Linear
 from omegaconf import OmegaConf, DictConfig, ListConfig
 from typing import Union, List
+from distutils.util import strtobool
 
 torch.manual_seed(0)
 config: Union[DictConfig, ListConfig] = OmegaConf.load("params.yaml")
@@ -53,15 +50,15 @@ arg.add_argument("-nc", "--num_classes", type=int,
                  default=config.constant.num_classes)
 arg.add_argument("-img", "--image_size", type=int,
                  default=config.constant.img_size)
-arg.add_argument("-const", "--constant", type=bool,
-                 default=True)
+arg.add_argument("-const", "--constant", action="store_true",
+                 default=True, help="Pass TRUE or FALSE / T or F")
 args = vars(arg.parse_args())
 
 
 num_classes: int = args['num_classes']
 modelName: ModelName = ModelBuilder.parseToModelName(config, args["model"])
 model: Module = ModelBuilder.preserveModel(modelName, device, num_classes)
-isConstant: bool = args["constant"]
+isConstant: bool = strtobool(args["constant"])
 summary(model, (3, config.constant.img_size, config.constant.img_size))
 trainDataLoader, validDataLoader, testDataLoader = DataPreps.makeDataset(args["training_path"],
                                                                          args["valid_path"],
