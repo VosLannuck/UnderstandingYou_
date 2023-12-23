@@ -141,7 +141,7 @@ def getMultistepScheduler(config: Union[DictConfig, ListConfig],
                                        lr=config.constant.best_p_vit)
         scheduler = lr_scheduler.MultiStepLR(optimizer=optimizer,
                                              milestones=milestones,
-                                             gamma=0.001)
+                                             gamma=0.0001)
         return optimizer, scheduler
     else:
         raise ("Wrong model name")
