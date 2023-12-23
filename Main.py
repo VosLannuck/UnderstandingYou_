@@ -51,7 +51,7 @@ arg.add_argument("-nc", "--num_classes", type=int,
 arg.add_argument("-img", "--image_size", type=int,
                  default=config.constant.img_size)
 arg.add_argument("-const", "--constant", action="store_true",
-                 default=True, help="Pass TRUE or FALSE / T or F")
+                 help="Pass TRUE or FALSE / T or F")
 args = vars(arg.parse_args())
 
 
