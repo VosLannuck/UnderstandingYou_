@@ -66,8 +66,7 @@ trainDataLoader, validDataLoader, testDataLoader = DataPreps.makeDataset(args["t
                                                                          args["num_classes"],
                                                                          args["image_size"],
                                                                          args["batch"],
-                                                                         )
-trainer: Trainer = Trainer(
+                                                                         ) trainer: Trainer = Trainer(
     trainDataLoader,
     validDataLoader,
     testDataLoader,
@@ -89,56 +88,56 @@ def getMultistepScheduler(config: Union[DictConfig, ListConfig],
                           gamma=0.0001):
     if (modelName == ModelName.vanilla_alex):
         optimizer: torch.optim = AdamW(params=model.parameters(),
-                                       lr=config.best_v_alex)
+                                       lr=config.constant.best_v_alex)
         scheduler = lr_scheduler.MultiStepLR(optimizer=optimizer,
                                              milestones=milestones,
                                              gamma=gamma)
         return optimizer, scheduler
     elif (modelName == ModelName.pretrained_alex):
         optimizer: torch.optim = AdamW(params=model.parameters(),
-                                       lr=config.best_p_alex)
+                                       lr=config.constant.best_p_alex)
         scheduler = lr_scheduler.MultiStepLR(optimizer=optimizer,
                                              milestones=milestones,
                                              gamma=gamma)
         return optimizer, scheduler
     elif (modelName == ModelName.vanilla_vgg16):
         optimizer: torch.optim = AdamW(params=model.parameters(),
-                                       lr=config.best_v_vgg16)
+                                       lr=config.constant.best_v_vgg16)
         scheduler = lr_scheduler.MultiStepLR(optimizer=optimizer,
                                              milestones=milestones,
                                              gamma=gamma)
         return optimizer, scheduler
     elif (modelName == ModelName.pretrained_vgg):
         optimizer: torch.optim = AdamW(params=model.parameters(),
-                                       lr=config.best_p_vgg16)
+                                       lr=config.constant.best_p_vgg16)
         scheduler = lr_scheduler.MultiStepLR(optimizer=optimizer,
                                              milestones=milestones,
                                              gamma=gamma)
         return optimizer, scheduler
     elif (modelName == ModelName.vanilla_resnet):
         optimizer: torch.optim = AdamW(params=model.parameters(),
-                                       lr=config.best_v_resnet)
+                                       lr=config.constant.best_v_resnet)
         scheduler = lr_scheduler.MultiStepLR(optimizer=optimizer,
                                              milestones=milestones,
                                              gamma=gamma)
         return optimizer, scheduler
     elif (modelName == ModelName.pretrained_resnet):
         optimizer: torch.optim = AdamW(params=model.parameters(),
-                                       lr=config.best_p_resnet)
+                                       lr=config.constant.best_p_resnet)
         scheduler = lr_scheduler.MultiStepLR(optimizer=optimizer,
                                              milestones=milestones,
                                              gamma=0.001)
         return optimizer, scheduler
     elif (modelName == ModelName.vanilla_cnn):
         optimizer: torch.optim = AdamW(params=model.parameters(),
-                                       lr=config.best_v_cnn)
+                                       lr=config.constant.best_v_cnn)
         scheduler = lr_scheduler.MultiStepLR(optimizer=optimizer,
                                              milestones=milestones,
                                              gamma=gamma)
         return optimizer, scheduler
     elif (modelName == ModelName.vit):
         optimizer: torch.optim = AdamW(params=model.parameters(),
-                                       lr=config.best_p_vit)
+                                       lr=config.constant.best_p_vit)
         scheduler = lr_scheduler.MultiStepLR(optimizer=optimizer,
                                              milestones=milestones,
                                              gamma=0.001)
