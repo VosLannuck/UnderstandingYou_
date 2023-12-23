@@ -66,7 +66,8 @@ trainDataLoader, validDataLoader, testDataLoader = DataPreps.makeDataset(args["t
                                                                          args["num_classes"],
                                                                          args["image_size"],
                                                                          args["batch"],
-                                                                         ) trainer: Trainer = Trainer(
+                                                                         ) 
+trainer: Trainer = Trainer(
     trainDataLoader,
     validDataLoader,
     testDataLoader,
