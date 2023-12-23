@@ -13,7 +13,6 @@ from torch.optim import AdamW, lr_scheduler
 from torchsummary import summary
 from omegaconf import OmegaConf, DictConfig, ListConfig
 from typing import Union, List
-from distutils.util import strtobool
 
 torch.manual_seed(0)
 config: Union[DictConfig, ListConfig] = OmegaConf.load("params.yaml")
@@ -58,7 +57,7 @@ args = vars(arg.parse_args())
 num_classes: int = args['num_classes']
 modelName: ModelName = ModelBuilder.parseToModelName(config, args["model"])
 model: Module = ModelBuilder.preserveModel(modelName, device, num_classes)
-isConstant: bool = strtobool(args["constant"])
+isConstant: bool = args["constant"]
 print("Running with Constant lr" if isConstant else "Running with Scheduler")
 summary(model, (3, config.constant.img_size, config.constant.img_size))
 trainDataLoader, validDataLoader, testDataLoader = DataPreps.makeDataset(args["training_path"],
