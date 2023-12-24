@@ -1,17 +1,13 @@
 import pandas as pd
 import numpy as np
-import os
 import matplotlib.pyplot as plt
-import seaborn as sns
 import torch
 import FeatureMapsExtractor as fme
 
 from Enums import ModelName, ModelMethod
 from torch.nn import Module
 from torch.utils.data import DataLoader
-from PIL.Image import Image
 from typing import List, Tuple
-
 
 
 def showRandomImages(listImages: List[str],
@@ -116,40 +112,13 @@ def getFalsePrediction(listTargets: List[torch.Tensor],
 
 
 def runAlgorithm(config,
+                 model: Module,
                  modelName: ModelName,
                  loader: DataLoader,
                  device: str = "cpu",
                  loader_type_validation: bool = True):
-    model: Module
     title: str = ""
     pre_title: str = "Validation Result" if loader_type_validation else "Testing Result"
-    if (modelName == ModelName.vanilla_alex):
-        model = fme.loadModelFromPath(ModelMethod.ALEXNET,
-                                      path=config.fme.alexnet_baseline_path_best)
-
-    elif (modelName == ModelName.pretrained_alex):
-        model = fme.loadModelFromPath(ModelMethod.ALEXNET,
-                                      path=config.fme.pretrained_alex_path_best)
-    elif (modelName == ModelName.vanilla_resnet):
-        model = fme.loadModelFromPath(ModelMethod.RESNET,
-                                      path=config.fme.resnet_baseline_path_best)
-
-    elif (modelName == ModelName.pretrained_resnet):
-        model = fme.loadModelFromPath(ModelMethod.RESNET,
-                                      path=config.fme.pretrained_resnet_path_best)
-
-    elif (modelName == ModelName.vanilla_vgg16):
-        model = fme.loadModelFromPath(ModelMethod.VGG,
-                                      path=config.fme.vgg_baseline_path_best)
-
-    elif (modelName == ModelName.pretrained_vgg):
-        model = fme.loadModelFromPath(ModelMethod.VGG,
-                                      path=config.fme.pretrained_vgg_path_best)
-    elif (modelName == ModelName.vit):
-        ## CHANGE 
-        model = fme.loadModelFromPath(ModelMethod.VIT,
-                                      path=config.fme.pretrained_alex_baseline_path_best)
-
     title = pre_title + " - Model - " + modelName.name
     imgs, targets, preds = predictLoader(model, loader, device=device)
     f_imgs, f_targets, f_preds = getFalsePrediction(imgs, targets, preds)
