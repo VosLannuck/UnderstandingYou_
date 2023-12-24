@@ -35,7 +35,7 @@ constant:
   best_p_alex: 0.000339
   best_p_resnet: 0.006045
   best_p_vgg16: 0.000317
-  best_p_vit: 0.001023
+  best_p_vit: 0.0001023
 
 fme:
   cnn_testing_path_best: "./checkpoints/vanilla_cnn/best.pth"
