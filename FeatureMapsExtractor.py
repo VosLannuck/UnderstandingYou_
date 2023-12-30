@@ -57,8 +57,8 @@ def loadPretrained(modelMethod: ModelMethod, path: str = None) -> torch.nn.Modul
                                      out_features=NUM_CLASSES,
                                      )
     elif (modelMethod == ModelMethod.VIT):
-        vit_model: SwinTransformer = models.swin_v2_t(weights="DEFAULT")
-        vit_model.head = Linear(in_features=vit_model.head.in_features,
+        model: SwinTransformer = models.swin_v2_t(weights="DEFAULT")
+        model.head = Linear(in_features=model.head.in_features,
                                 out_features=NUM_CLASSES)
     if path:
         model.load_state_dict(torch.load(path))
