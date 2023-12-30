@@ -3,16 +3,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 import FeatureMapsExtractor as fme
-
 from Enums import ModelName, ModelMethod
 from torch.nn import Module
 from torch.utils.data import DataLoader
-from typing import List, Tuple
+from typing import List, Tuple, Dict
+from sklearn.metrics import classification_report
+from seaborn import heatmap
 
 
 def showRandomImages(listImages: List[str],
                      listLabels: List[str],
-                     n: int = 15, seed: int = 0):
+                     n: int = 5, seed: int = 0):
 
     randIndexes: np.array = np.random.randint(0, n,
                                               size=len(listImages))
@@ -109,6 +110,13 @@ def getFalsePrediction(listTargets: List[torch.Tensor],
             allFalseTargets.append(falseTarg)
             allFalsePredictions.append(falsePred)
     return allFalseImages, allFalseTargets, allFalsePredictions
+
+
+def plotClassificationReport(classificationReportDict):
+    heatmap(pd.DataFrame(classificationReportDict).iloc[:-1,:].T, annot=True, cmap="BuGn")
+    plt.show()
+
+
 
 
 def runAlgorithm(config,
