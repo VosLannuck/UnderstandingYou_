@@ -83,16 +83,23 @@ def predictLoader(model: Module,
             raw, prs_val_indx = torch.max(predicted, dim=1)
             #  print(raw)
             ##  print("\n\n\n")
-            if(device == "cpu"):
+            if (device == "cpu"):
                 predicted_model_smoking  = np.concatenate([predicted_model_smoking,
                                                            predicted[:, 1].detach().numpy()])
                 predicted_model_n_smoking = np.concatenate([predicted_model_n_smoking,
                                                             predicted[:, 0].detach().numpy()])
-            else: 
+                raw = raw.detach()
+            else:
                 predicted_model_smoking  = np.concatenate([predicted_model_smoking,
                                                            predicted[:, 1].detach().cpu().numpy()])
                 predicted_model_n_smoking = np.concatenate([predicted_model_n_smoking,
                                                             predicted[:, 0].detach().cpu().numpy()])
+
+                target = target.detach().cpu()
+                prs_val_indx = prs_val_indx.detach().cpu()
+                data = data.detach().cpu()
+                raw = raw.detach().cpu()
+
             predicted_raw_max.append(raw)
             predictions.append(prs_val_indx)
             targets.append(target)
@@ -100,41 +107,6 @@ def predictLoader(model: Module,
             torch.cuda.empty_cache()
 
     return images, targets, predictions, predicted_model_smoking, predicted_model_n_smoking, predicted_raw_max
-
-def predictLoaderFOR_VGG(model: Module,
-                         dataLoader: DataLoader,
-                         device: str = "cpu"):
-
-    predictions: List[int] = []
-    targets: List[int] = []
-    images: List[torch.Tensor] = []
-    predicted_raw_max: List[float] = []
-    model.eval()
-    predicted_model_n_smoking: np.array = np.array([])
-    predicted_model_smoking: np.array = np.array([])
-
-    for data, target in dataLoader:
-        target: torch.Tensor = target.type(torch.LongTensor)
-        data: torch.Tensor = data.to(device)
-        target = target.to(device)
-        predicted = model(data)
-        #  print(predicted)
-        raw, prs_val_indx = torch.max(predicted, dim=1)
-        #  print(raw)
-        ##  print("\n\n\n")
-        predicted_model_smoking  = np.concatenate([predicted_model_smoking,
-                                                   predicted[:, 1].detach().numpy()])
-        predicted_model_n_smoking = np.concatenate([predicted_model_n_smoking,
-                                                    predicted[:, 0].detach().numpy()])
-
-        predicted_raw_max.append(raw)
-        predictions.append(prs_val_indx)
-        targets.append(target)
-        images.append(data)
-        break
-
-    return images, targets, predictions, predicted_model_smoking, predicted_model_n_smoking, predicted_raw_max
-
 
 def changeToNormalImage(listImages: Tuple[torch.Tensor]):
     normalImages = []
@@ -156,7 +128,7 @@ def getFalsePrediction(listTargets: List[torch.Tensor],
     for indx in range(len(listTargets)):
         npTargets: np.ndarray = listTargets[indx].numpy()
         npPredicts: np.ndarray = listPredicts[indx].numpy()
-        npRawPredicts: np.ndarray = listRawPredicts[indx].detach().numpy()
+        npRawPredicts: np.ndarray = listRawPredicts[indx].numpy()
         npRawPredicts -= npRawPredicts.min()
         npRawPredicts /= npRawPredicts.max()
         listImages_tf: Tuple[torch.Tensor] = torch.unbind(listImages[indx])
@@ -205,33 +177,6 @@ def plotHistPlotComparasionPrediction(not_smoke, smoke):
     plt.title("Prediction Confidence")
     plt.legend()
     plt.show()
-
-
-def runAlgorithmForVGGOnly(config,
-                           model: Module,
-                           modelName: ModelName,
-                           loader: DataLoader,
-                           device: str = "cpu",
-                           loader_type_validation: bool = True):
-    print(f"Result for : ${modelName.name}")
-    title: str = ""
-    pre_title: str = "Validation Result" if loader_type_validation else "Testing Result"
-    title = pre_title + " - Model - " + modelName.name
-    imgs, targets, preds, predicted_smoking_conf, predicted_n_smoking_conf, predicted_raw = predictLoaderFOR_VGG(model, loader, device=device)
-    plotClassificationReport(targets,
-                             preds)
-    predicted_smoking_conf -= predicted_smoking_conf.min()
-    predicted_smoking_conf /= predicted_smoking_conf.max()
-
-    predicted_n_smoking_conf -= predicted_n_smoking_conf.min()
-    predicted_n_smoking_conf /= predicted_n_smoking_conf.max()
-
-    plotHistPlotComparasionPrediction(predicted_smoking_conf, predicted_n_smoking_conf)
-    f_imgs, f_targets, f_preds, f_raw_preds = getFalsePrediction(targets, preds, imgs, predicted_raw)
-    showRandomIncorrectlyClassified(f_imgs, f_targets,
-                                    f_preds, f_raw_preds,
-                                    title=title,
-                                    n=len(f_imgs))
 
 
 def runAlgorithm(config,
