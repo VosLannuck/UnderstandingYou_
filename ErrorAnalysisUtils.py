@@ -7,8 +7,8 @@ from Enums import ModelName, ModelMethod
 from torch.nn import Module
 from torch.utils.data import DataLoader
 from typing import List, Tuple, Dict
-from sklearn.metrics import classification_report
-from seaborn import heatmap
+from sklearn.metrics import classification_report, confusion_matrix
+import seaborn as sns
 
 
 def showRandomImages(listImages: List[str],
@@ -30,8 +30,9 @@ def showRandomImages(listImages: List[str],
 
 
 def showRandomIncorrectlyClassified(listImages: List[str],
-                                    listLabels: List[str],
-                                    listPredicted: List[str],
+                                    listLabels: List[int],
+                                    listPredicted: List[int],
+                                    listRawPreds: List[int],
                                     title: str = "Resnet Predicting Validation data",
                                     n: int = 10,
                                     seed: int = 0):
@@ -42,10 +43,11 @@ def showRandomIncorrectlyClassified(listImages: List[str],
     axes = axes.flatten()
     for i, ax in enumerate(axes):
         img_path: str = listImages[randIndexes[i]]
-        label: str = listLabels[randIndexes[i]]
-        pred: str = listPredicted[randIndexes[i]]
+        label: int = listLabels[randIndexes[i]]
+        pred: int = listPredicted[randIndexes[i]]
+        raw_value: int = listRawPreds[randIndexes[i]]
         ax.imshow(img_path)
-        ax.set_title("True: %s Predicted %s" % (label, pred))
+        ax.set_title("True: %s ; Predicted: %s ; conf: %s" % (label, pred, raw_value))
         ax.set_axis_off()
     f.suptitle(title)
     plt.show()
@@ -66,18 +68,31 @@ def predictLoader(model: Module,
     predictions: List[int] = []
     targets: List[int] = []
     images: List[torch.Tensor] = []
+    predicted_raw_max: List[float] = []
     model.eval()
+    predicted_model_n_smoking: np.array = np.array([])
+    predicted_model_smoking: np.array = np.array([])
+
     for data, target in dataLoader:
         target: torch.Tensor = target.type(torch.LongTensor)
         data: torch.Tensor = data.to(device)
         target = target.to(device)
         predicted = model(data)
+        #  print(predicted)
+        raw, prs_val_indx = torch.max(predicted, dim=1)
+        #  print(raw)
+        #  print("\n\n\n")
+        predicted_model_smoking  = np.concatenate([predicted_model_smoking,
+                                                   predicted[:, 1].detach().numpy()])
+        predicted_model_n_smoking = np.concatenate([predicted_model_n_smoking,
+                                                    predicted[:, 0].detach().numpy()])
 
-        predictions.append(torch.max(predicted, dim=1)[1])
+        predicted_raw_max.append(raw)
+        predictions.append(prs_val_indx)
         targets.append(target)
         images.append(data)
 
-    return images, targets, predictions
+    return images, targets, predictions, predicted_model_smoking, predicted_model_n_smoking, predicted_raw_max
 
 
 def changeToNormalImage(listImages: Tuple[torch.Tensor]):
@@ -92,31 +107,60 @@ def changeToNormalImage(listImages: Tuple[torch.Tensor]):
 def getFalsePrediction(listTargets: List[torch.Tensor],
                        listPredicts: List[torch.Tensor],
                        listImages: List[torch.Tensor],
+                       listRawPredicts,
                        batch_indx: int = 0,
                        ):
     allFalseImages, allFalsePredictions, allFalseTargets = [], [], []
+    allFalseRawPredicts = []
     for indx in range(len(listTargets)):
         npTargets: np.ndarray = listTargets[indx].numpy()
         npPredicts: np.ndarray = listPredicts[indx].numpy()
+        npRawPredicts: np.ndarray = listRawPredicts[indx].detach().numpy()
         listImages_tf: Tuple[torch.Tensor] = torch.unbind(listImages[indx])
         npImages: np.ndarray = np.array(changeToNormalImage(listImages_tf))
         falseIndexes: np.ndarray = np.where(npTargets != npPredicts)
         falseImages = npImages[falseIndexes]
         falsePredictions = npPredicts[falseIndexes]
         falseTargets = npTargets[falseIndexes]
+        falseRawPredicts = npRawPredicts[falseIndexes]
 
-        for falseImg, falseTarg, falsePred in zip(falseImages, falseTargets, falsePredictions):
+        for falseImg, falseTarg, falsePred, falseRaw in zip(falseImages, falseTargets,
+                                                  falsePredictions, falseRawPredicts):
             allFalseImages.append(falseImg)
             allFalseTargets.append(falseTarg)
             allFalsePredictions.append(falsePred)
-    return allFalseImages, allFalseTargets, allFalsePredictions
+            allFalseRawPredicts.append(falseRaw)
+
+    npArrFalseTargets = np.array(allFalseTargets)
+    indx_false_predict_smoking = np.where(npArrFalseTargets != 1)
+    indx_false_predict_n_smoking = np.where(npArrFalseTargets != 0)
 
 
-def plotClassificationReport(classificationReportDict):
-    heatmap(pd.DataFrame(classificationReportDict).iloc[:-1,:].T, annot=True, cmap="BuGn")
+    print("Total Missclassification for smoking: ", len(npArrFalseTargets[indx_false_predict_smoking]), " from total ", len(allFalseImages), " data")
+    print("Total Missclassification for Not Smoking: ", len(npArrFalseTargets[indx_false_predict_n_smoking]), "from total  ", len(allFalseImages), " data")
+    return allFalseImages, allFalseTargets, allFalsePredictions, allFalseRawPredicts
+
+
+def plotClassificationReport(targets: List[torch.Tensor],
+                             preds:[torch.Tensor]):
+
+    all_targets: List[torch.Tensor] = np.array([])
+    all_preds: List[torch.Tensor] = np.array([])
+    for indx,_ in enumerate(targets):
+        all_targets = np.concatenate((all_targets,targets[indx]), axis=0)
+        all_preds = np.concatenate((all_preds, preds[indx]), axis=0)
+    print(classification_report(all_targets, all_preds))
+
+    return all_targets, all_preds
+
+
+def plotHistPlotComparasionPrediction(not_smoke, smoke):
+    sns.histplot(x=not_smoke, label="not_smoke")
+    sns.histplot(x=smoke, label="smoke")
+
+    plt.title("Prediction Confidence")
+    plt.legend()
     plt.show()
-
-
 
 
 def runAlgorithm(config,
@@ -125,11 +169,17 @@ def runAlgorithm(config,
                  loader: DataLoader,
                  device: str = "cpu",
                  loader_type_validation: bool = True):
+    print(f"Result for : ${modelName.name}")
     title: str = ""
     pre_title: str = "Validation Result" if loader_type_validation else "Testing Result"
     title = pre_title + " - Model - " + modelName.name
-    imgs, targets, preds = predictLoader(model, loader, device=device)
-    f_imgs, f_targets, f_preds = getFalsePrediction(imgs, targets, preds)
+    imgs, targets, preds, predicted_smoking_conf, predicted_n_smoking_conf, predicted_raw = predictLoader(model, loader, device=device)
+    plotClassificationReport(targets,
+                             preds)
+
+    plotHistPlotComparasionPrediction(predicted_smoking_conf, predicted_n_smoking_conf)
+    f_imgs, f_targets, f_preds, f_raw_preds = getFalsePrediction(targets, preds, imgs, predicted_raw)
     showRandomIncorrectlyClassified(f_imgs, f_targets,
-                                    f_preds, n=len(f_imgs),
-                                    title=title)
+                                    f_preds, f_raw_preds,
+                                    title=title,
+                                    n=len(f_imgs))

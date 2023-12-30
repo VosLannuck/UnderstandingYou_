@@ -47,7 +47,7 @@ def loadPretrained(modelMethod: ModelMethod, path: str = None) -> torch.nn.Modul
                                      out_features=NUM_CLASSES,
                                      )
     elif (modelMethod == ModelMethod.RESNET):
-        model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+        model = models.resnet34(weights=models.ResNet34_Weights.DEFAULT)
         model.fc = Linear(in_features=512, out_features=2)
     elif (modelMethod == ModelMethod.VGG):
         model = models.vgg16(weights=models.VGG16_Weights.DEFAULT)
@@ -73,6 +73,7 @@ def loadModelFromPath(modelMethod: ModelMethod, path: str) -> nn.Module:
         model = CNN_Testing(numChannels=NUM_CLASSES)
     model.load_state_dict(torch.load(path))
     return model
+
 
 
 def loadModel(modelMethod: ModelMethod,
