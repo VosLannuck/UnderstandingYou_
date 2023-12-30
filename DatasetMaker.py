@@ -122,9 +122,9 @@ class MainSmokerDataset():
         self.trainDataset: SmokerDataset = SmokerDataset(self.trainDataFrame,
                                                          img_size)
         self.validationDataset: SmokerDataset = SmokerDataset(self.validationDataFrame,
-                                                              img_size)
+                                                              img_size, "test")
         self.testDataset: SmokerDataset = SmokerDataset(self.testDataFrame,
-                                                        img_size)
+                                                        img_size, "test")
 
     def makeDataLoader(self, batchSize: int):
         self.trainDataLoader = DataLoader(self.trainDataset,
@@ -134,4 +134,5 @@ class MainSmokerDataset():
         self.validationDataLoader = DataLoader(self.validationDataset,
                                                batch_size=batchSize,
                                                )
-        self.testDataLoader = DataLoader(self.testDataset)
+        self.testDataLoader = DataLoader(self.testDataset,
+                                         batchSize=batchSize)
