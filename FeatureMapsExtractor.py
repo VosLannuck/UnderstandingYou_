@@ -22,6 +22,8 @@ from Baseline_Resnet import ResidualBlock, BaselineResnet
 from typing import Union
 from Enums import ModelName, ModelMethod
 from omegaconf import OmegaConf, DictConfig, ListConfig
+from torchvision.models import Swin_T_Weights
+from torchvision.models.swin_transformer import SwinTransformer
 
 config: Union[DictConfig, ListConfig] = OmegaConf.load("params.yaml")
 NUM_CLASSES: int = 2
@@ -48,12 +50,16 @@ def loadPretrained(modelMethod: ModelMethod, path: str = None) -> torch.nn.Modul
                                      )
     elif (modelMethod == ModelMethod.RESNET):
         model = models.resnet34(weights=models.ResNet34_Weights.DEFAULT)
-        model.fc = Linear(in_features=512, out_features=2)
+        model.fc = Linear(in_features=512, out_features=NUM_CLASSES)
     elif (modelMethod == ModelMethod.VGG):
         model = models.vgg16(weights=models.VGG16_Weights.DEFAULT)
         model.classifier[6] = Linear(in_features=4096,
                                      out_features=NUM_CLASSES,
                                      )
+    elif (modelMethod == ModelMethod.VIT):
+        vit_model: SwinTransformer = models.swin_v2_t(weights="DEFAULT")
+        vit_model.head = Linear(in_features=vit_model.head.in_features,
+                                out_features=NUM_CLASSES)
     if path:
         model.load_state_dict(torch.load(path))
     return model
