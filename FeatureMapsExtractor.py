@@ -160,10 +160,10 @@ def flattenFilters(outputs_conv: List[Tensor]) -> List[Tensor]:
 def plotFilters(filters: List[Tensor], layers_info):
     fig: plt.Figure = plt.figure(figsize=(20, 15))
     for i in range(len(filters) ):
-        axes: Axes = fig.add_subplot(5, 4, i+1)
+        axes: Axes = fig.add_subplot(9, 4, i+1)
         _ = plt.imshow(filters[i])
         axes.axis("off")
-        axes.set_title("%s -%s" % (layers_info[i].__class__.__name__, i), fontdict={"fontsize": 30})
+        axes.set_title("%s -%s" % (layers_info[i].__class__.__name__, len(filters)- i), fontdict={"fontsize": 30})
 
 
 def extractResultFeaturemaps(model: Module, device: str = "cpu",
@@ -175,6 +175,17 @@ def extractResultFeaturemaps(model: Module, device: str = "cpu",
     filters = flattenFilters(outputs_conv)
     plotFilters(filters, layers_info)
 
+def prepareImageForPrediction(path: str):
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+
+    img = Image.open(path)
+    img = transform(img).unsqueeze(0)
+
+    return img
 
 def run(modelName: str, type_model: str = "pretrained", path: str= None,
         device: str = "cpu", image_path: str = "dog.jpg"):
@@ -188,13 +199,20 @@ def run(modelName: str, type_model: str = "pretrained", path: str= None,
         model = loadModel(ModelMethod.VGG, type_model, path)
     elif (modelName == "cnn"):
         model = loadModel(ModelMethod.CNN, type_model, path)
-    model = model.to(device)
-    model_weights, conv_layers = extractFeatureMaps(model)
-    image = applyImageTransformation(image_path, device)
-    outputs_conv, layers_info = generateFeatureMapsFromInput(image,
-                                                             conv_layers)
-    filters: List[Tensor] = flattenFilters(outputs_conv)
-    plotFilters(filters)
+    with torch.no_grad():
+        model = model.to(device)
+        img_real = prepareImageForPrediction(image_path)
+        model_weights, conv_layers = extractFeatureMaps(model)
+        preds = model(img_real)
+        torch.nn.functional.softmax(preds, dim=1)
+        _, predicted = torch.max(preds, 1)
+        
+        image = applyImageTransformation(image_path, device)
+        outputs_conv, layers_info = generateFeatureMapsFromInput(image,
+                                                                 conv_layers)
+        filters: List[Tensor] = flattenFilters(outputs_conv)
+        plotFilters(filters, layers_info)
+        torch.cuda.empty_cache()
 
 
 #if __name__ == "__main__":
