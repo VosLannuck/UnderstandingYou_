@@ -135,4 +135,4 @@ class MainSmokerDataset():
                                                batch_size=batchSize,
                                                )
         self.testDataLoader = DataLoader(self.testDataset,
-                                         batchSize=batchSize)
+                                         batch_size=batchSize)
