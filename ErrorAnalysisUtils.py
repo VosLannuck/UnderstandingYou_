@@ -69,28 +69,35 @@ def predictLoader(model: Module,
     targets: List[int] = []
     images: List[torch.Tensor] = []
     predicted_raw_max: List[float] = []
+    model.to(device)
     model.eval()
     predicted_model_n_smoking: np.array = np.array([])
     predicted_model_smoking: np.array = np.array([])
-
-    for data, target in dataLoader:
-        target: torch.Tensor = target.type(torch.LongTensor)
-        data: torch.Tensor = data.to(device)
-        target = target.to(device)
-        predicted = model(data)
-        #  print(predicted)
-        raw, prs_val_indx = torch.max(predicted, dim=1)
-        #  print(raw)
-        ##  print("\n\n\n")
-        predicted_model_smoking  = np.concatenate([predicted_model_smoking,
-                                                   predicted[:, 1].detach().numpy()])
-        predicted_model_n_smoking = np.concatenate([predicted_model_n_smoking,
-                                                    predicted[:, 0].detach().numpy()])
-
-        predicted_raw_max.append(raw)
-        predictions.append(prs_val_indx)
-        targets.append(target)
-        images.append(data)
+    with torch.no_grad():
+        for data, target in dataLoader:
+            target: torch.Tensor = target.type(torch.LongTensor)
+            data: torch.Tensor = data.to(device)
+            target = target.to(device)
+            predicted = model(data)
+            #  print(predicted)
+            raw, prs_val_indx = torch.max(predicted, dim=1)
+            #  print(raw)
+            ##  print("\n\n\n")
+            if(device == "cpu"):
+                predicted_model_smoking  = np.concatenate([predicted_model_smoking,
+                                                           predicted[:, 1].detach().numpy()])
+                predicted_model_n_smoking = np.concatenate([predicted_model_n_smoking,
+                                                            predicted[:, 0].detach().numpy()])
+            else: 
+                predicted_model_smoking  = np.concatenate([predicted_model_smoking,
+                                                           predicted[:, 1].detach().cpu().numpy()])
+                predicted_model_n_smoking = np.concatenate([predicted_model_n_smoking,
+                                                            predicted[:, 0].detach().cpu().numpy()])
+            predicted_raw_max.append(raw)
+            predictions.append(prs_val_indx)
+            targets.append(target)
+            images.append(data)
+            torch.cuda.empty_cache()
 
     return images, targets, predictions, predicted_model_smoking, predicted_model_n_smoking, predicted_raw_max
 
