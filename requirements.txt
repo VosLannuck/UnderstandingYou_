@@ -11,4 +11,4 @@ torchsummary==1.5.1
 torchvision==0.16.1
 tqdm==4.65.0
 optuna==3.5.0
-tensorboardX=2.5.0
+tensorboardX==2.5.0
