@@ -81,7 +81,7 @@ def predictLoader(model: Module,
         #  print(predicted)
         raw, prs_val_indx = torch.max(predicted, dim=1)
         #  print(raw)
-        #  print("\n\n\n")
+        ##  print("\n\n\n")
         predicted_model_smoking  = np.concatenate([predicted_model_smoking,
                                                    predicted[:, 1].detach().numpy()])
         predicted_model_n_smoking = np.concatenate([predicted_model_n_smoking,
@@ -116,6 +116,8 @@ def getFalsePrediction(listTargets: List[torch.Tensor],
         npTargets: np.ndarray = listTargets[indx].numpy()
         npPredicts: np.ndarray = listPredicts[indx].numpy()
         npRawPredicts: np.ndarray = listRawPredicts[indx].detach().numpy()
+        npRawPredicts -= npRawPredicts.min()
+        npRawPredicts /= npRawPredicts.max()
         listImages_tf: Tuple[torch.Tensor] = torch.unbind(listImages[indx])
         npImages: np.ndarray = np.array(changeToNormalImage(listImages_tf))
         falseIndexes: np.ndarray = np.where(npTargets != npPredicts)
@@ -155,6 +157,7 @@ def plotClassificationReport(targets: List[torch.Tensor],
 
 
 def plotHistPlotComparasionPrediction(not_smoke, smoke):
+ 
     sns.histplot(x=not_smoke, label="not_smoke")
     sns.histplot(x=smoke, label="smoke")
 
@@ -176,6 +179,11 @@ def runAlgorithm(config,
     imgs, targets, preds, predicted_smoking_conf, predicted_n_smoking_conf, predicted_raw = predictLoader(model, loader, device=device)
     plotClassificationReport(targets,
                              preds)
+    predicted_smoking_conf -= predicted_smoking_conf.min()
+    predicted_smoking_conf /= predicted_smoking_conf.max()
+
+    predicted_n_smoking_conf -= predicted_n_smoking_conf.min()
+    predicted_n_smoking_conf /= predicted_n_smoking_conf.max()
 
     plotHistPlotComparasionPrediction(predicted_smoking_conf, predicted_n_smoking_conf)
     f_imgs, f_targets, f_preds, f_raw_preds = getFalsePrediction(targets, preds, imgs, predicted_raw)

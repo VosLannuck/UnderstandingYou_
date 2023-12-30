@@ -5,3 +5,5 @@ checkpoints
 mlruns/
 hyperopts_checkpoint/
 dog.jpg
+*.zip
+*.txt
