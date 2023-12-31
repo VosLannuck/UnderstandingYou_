@@ -51,6 +51,8 @@ arg.add_argument("-img", "--image_size", type=int,
                  default=config.constant.img_size)
 arg.add_argument("-const", "--constant", action="store_true",
                  help="Pass TRUE or FALSE / T or F")
+arg.add_argument("--best", "--best_constant_lr",
+                 action="store_true")
 args = vars(arg.parse_args())
 
 
@@ -58,6 +60,7 @@ num_classes: int = args['num_classes']
 modelName: ModelName = ModelBuilder.parseToModelName(config, args["model"])
 model: Module = ModelBuilder.preserveModel(modelName, device, num_classes)
 isConstant: bool = args["constant"]
+bestConstant: bool = args["best_constant_lr"]
 print("Running with Constant lr" if isConstant else "Running with Scheduler")
 summary(model, (3, config.constant.img_size, config.constant.img_size))
 trainDataLoader, validDataLoader, testDataLoader = DataPreps.makeDataset(args["training_path"],
@@ -159,9 +162,19 @@ if (not isConstant):
         ...
 
 else:
-    optimizer = AdamW(params=model.parameters(),
-                      lr=config.constant.lr)
-    for _, _, _, _ in trainer.TrainModel(model, cls, optimizer,
-                                         epoch=config.constant.epoch,
-                                         model_name=modelName.name):
-        ...
+    if (bestConstant == True):
+        print("Training with best hyperparams")
+        optimizer = getMultistepScheduler(config,
+                                          model,
+                                          modelName)
+        for _, _, _, _ in trainer.TrainModel(model, cls, optimizer,
+                                             epoch=config.constant.epoch,
+                                             model_name=modelName.name):
+            ...
+    else:
+        optimizer = AdamW(params=model.parameters(),
+                          lr=config.constant.lr)
+        for _, _, _, _ in trainer.TrainModel(model, cls, optimizer,
+                                             epoch=config.constant.epoch,
+                                             model_name=modelName.name):
+            ...
