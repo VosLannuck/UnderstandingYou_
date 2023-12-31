@@ -164,7 +164,7 @@ if (not isConstant):
 else:
     if (bestConstant == True):
         print("Training with best hyperparams")
-        optimizer = getMultistepScheduler(config,
+        optimizer, _ = getMultistepScheduler(config,
                                           model,
                                           modelName)
         for _, _, _, _ in trainer.TrainModel(model, cls, optimizer,
