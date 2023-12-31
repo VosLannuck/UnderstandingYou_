@@ -204,9 +204,10 @@ def run(modelName: str, type_model: str = "pretrained", path: str= None,
         img_real = prepareImageForPrediction(image_path)
         model_weights, conv_layers = extractFeatureMaps(model)
         preds = model(img_real)
-        torch.nn.functional.softmax(preds, dim=1)
-        _, predicted = torch.max(preds, 1)
-        
+        preds = torch.nn.functional.softmax(preds, dim=1)
+        raw, predicted = torch.max(preds, 1)
+        print(f"Confidence {raw} {'smoking' if predicted == 1 else 'not smoking'}")
+
         image = applyImageTransformation(image_path, device)
         outputs_conv, layers_info = generateFeatureMapsFromInput(image,
                                                                  conv_layers)
