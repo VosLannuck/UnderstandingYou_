@@ -51,7 +51,7 @@ arg.add_argument("-img", "--image_size", type=int,
                  default=config.constant.img_size)
 arg.add_argument("-const", "--constant", action="store_true",
                  help="Pass TRUE or FALSE / T or F")
-arg.add_argument("--best", "--best_constant_lr",
+arg.add_argument("-best", "--best_constant_lr",
                  action="store_true")
 args = vars(arg.parse_args())
 
