@@ -42,4 +42,9 @@
     python HyperparamsMain.py 
 ```
 
+### Notebooks Folder
+ - Consist of Error analysis result and hyperparameter optimization result
+
+### All Research Result can be found in this link : 
+ - https://drive.google.com/drive/folders/1LyToIzM6Vd1NplK8aBR6oZhZhN6UvjtM?usp=sharing
 
